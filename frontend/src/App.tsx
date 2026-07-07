@@ -12,7 +12,7 @@ import {
 	Moon, 
 	Sun, 
 	X
-} from 'lucide-react';
+} from './icons';
 
 interface FileInfo {
 	name: string;

@@ -346,16 +346,18 @@ export default function App() {
 							<BudouText text={t.p2pEstablish} enabled={lang === 'ja'} />
 						</h2>
 						
-						<div className={styles.formGroup} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }}>
-							<span className={styles.label} style={{ margin: 0 }}>
+						<div className={styles.statusStack}>
+							<div className={styles.label} style={{ margin: 0 }}>
 								<BudouText text={t.statusLabel} enabled={lang === 'ja'} />:
-							</span>
-							<span className={`${styles.statusBadge} ${styles[connState]}`}>
-								{connState === 'connected' ? t.statusConnected : connState === 'connecting' ? t.statusConnecting : t.statusDisconnected}
-							</span>
-							<span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+							</div>
+							<div>
+								<span className={`${styles.statusBadge} ${styles[connState]}`}>
+									{connState === 'connected' ? t.statusConnected : connState === 'connecting' ? t.statusConnecting : t.statusDisconnected}
+								</span>
+							</div>
+							<div style={{ fontSize: '11px', color: 'var(--muted)' }}>
 								({t.statusTitle}: {fsmState})
-							</span>
+							</div>
 						</div>
 
 						{/* 役割表示 */}
@@ -383,6 +385,7 @@ export default function App() {
 									</span>
 									<textarea 
 										className={styles.textarea} 
+										data-testid="code-input"
 										placeholder={toBudouString(t.placeholderCode, lang === 'ja')}
 										value={inputCode}
 										onChange={(e) => setInputCode(e.target.value)}
@@ -390,7 +393,7 @@ export default function App() {
 								</div>
 
 								<div className={styles.formGroup}>
-									<button className={`${styles.button} ${styles.buttonSecondary}`} onClick={acceptOffer}>
+									<button className={`${styles.button} ${styles.buttonSecondary}`} data-testid="btn-create-answer" onClick={acceptOffer}>
 										<BudouText text={t.btnCreateAnswer} enabled={lang === 'ja'} />
 									</button>
 								</div>
@@ -428,6 +431,7 @@ export default function App() {
 										<div className={styles.copyGroup}>
 											<textarea 
 												className={styles.textarea} 
+												data-testid="offer-code"
 												readOnly 
 												value={generatedCode} 
 											/>
@@ -444,6 +448,7 @@ export default function App() {
 									</span>
 									<textarea 
 										className={styles.textarea} 
+										data-testid="code-input"
 										placeholder={toBudouString(t.placeholderCode, lang === 'ja')}
 										value={inputCode}
 										onChange={(e) => setInputCode(e.target.value)}
@@ -451,7 +456,7 @@ export default function App() {
 								</div>
 
 								<div className={styles.formGroup}>
-									<button className={styles.button} onClick={connectAnswer}>
+									<button className={styles.button} data-testid="btn-connect" onClick={connectAnswer}>
 										<BudouText text={t.btnConnect} enabled={lang === 'ja'} />
 									</button>
 								</div>
@@ -476,6 +481,7 @@ export default function App() {
 										<div className={styles.copyGroup}>
 											<textarea 
 												className={styles.textarea} 
+												data-testid="answer-code"
 												readOnly 
 												value={answerCode} 
 											/>

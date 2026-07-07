@@ -41,12 +41,13 @@ type State struct {
 	RemoteFiles    []FileInfo `json:"remoteFiles"`
 	SaveDir        string     `json:"saveDir"`
 	TransferFile   string     `json:"transferFile"`
-	CompletedFile  string     `json:"completedFile"`
-	BytesSent      int64      `json:"bytesSent"`
-	BytesReceived  int64      `json:"bytesReceived"`
-	TotalBytes     int64      `json:"totalBytes"`
-	Speed          float64    `json:"speed"`
-	IsTransferring bool       `json:"isTransferring"`
+	CompletedFile     string     `json:"completedFile"`
+	TransferEventSeq  int        `json:"transferEventSeq"` // 転送完了のたびにインクリメント（同名ファイル連続転送対策）
+	BytesSent         int64      `json:"bytesSent"`
+	BytesReceived     int64      `json:"bytesReceived"`
+	TotalBytes        int64      `json:"totalBytes"`
+	Speed             float64    `json:"speed"`
+	IsTransferring    bool       `json:"isTransferring"`
 }
 
 var GlobalState = &State{
@@ -366,6 +367,7 @@ func setupDataChannel(d *webrtc.DataChannel) {
 			}
 			GlobalState.Lock()
 			GlobalState.CompletedFile = GlobalState.TransferFile
+			GlobalState.TransferEventSeq++ // 完了イベントのシーケンス番号をインクリメント
 			GlobalState.IsTransferring = false
 			GlobalState.Unlock()
 

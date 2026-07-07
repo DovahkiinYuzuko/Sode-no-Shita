@@ -81,7 +81,7 @@ export default function App() {
 	// GoのSSEステータス監視
 	useEffect(() => {
 		const eventSource = new EventSource('/api/status');
-		let prevCompletedFile = '';
+		let prevEventSeq = 0;
 
 		eventSource.onmessage = (event) => {
 			try {
@@ -93,9 +93,10 @@ export default function App() {
 				const nextTotalBytes = state.totalBytes || 0;
 				const nextTransferFile = state.transferFile || '';
 				const nextCompletedFile = state.completedFile || '';
+				const nextEventSeq = state.transferEventSeq ?? 0;
 
-				// 送受信完了検知
-				if (nextCompletedFile && nextCompletedFile !== prevCompletedFile) {
+				// 送受信完了検知（シーケンス番号比較—同名ファイル連続転送・ SSEレース対策）
+				if (nextCompletedFile && nextEventSeq !== prevEventSeq) {
 					setTransferComplete({
 						fileName: nextCompletedFile,
 						role: nextRole
@@ -115,7 +116,7 @@ export default function App() {
 				setSpeed(state.speed || 0);
 				setIsTransferring(nextIsTransferring);
 
-				prevCompletedFile = nextCompletedFile;
+				prevEventSeq = nextEventSeq;
 
 				// 設定の同期
 				if (state.config) {

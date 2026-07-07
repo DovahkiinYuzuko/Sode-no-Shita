@@ -29,6 +29,11 @@
 !main.go
 !go.mod
 !go.sum
+
+!.github/
+!.github/**
+
 !README.md
 !LICENSE.*
 !NOTICE.md
+!image.png

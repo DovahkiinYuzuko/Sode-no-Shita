@@ -68,12 +68,12 @@ graph TD
   * アンサーを生成し、`webrtc.GatheringCompletePromise` でICE収集完了を最大3秒間待つ。
   * 収集完了またはタイムアウト後、`TransitionTo(StateConnecting)` を実行して状態を `CONNECTING` に移行し、接続コードBを返す。
 
-### (Function) `handleFileSendRequest` (L459-528)
+### (Function) `handleFileSendRequest` (L466-535)
 * **Description:** 指定された単一ファイルをData Channel経由でチャンク分割して送信する。
 * **Arguments:**
   * `fileName` (string): 送信ファイル名
 
-### (Function) `handleZipSendRequest` (L530-625)
+### (Function) `handleZipSendRequest` (L537-632)
 * **Description:** 選択された複数ファイルをメモリ上で動的（オンザフライ）にZIP化しながら、Data ChannelへZIPストリームとして送信する。
 * **Details:**
   * 各ファイルの `FileInfo` (`Stat()`) を正しく取得し、`zip.FileInfoHeader` に渡すことで安全にZIPアーカイブのヘッダーを構築して送信する。

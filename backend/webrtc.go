@@ -329,8 +329,15 @@ func setupDataChannel(d *webrtc.DataChannel) {
 			log.Printf("[WebRTC] Received 'start' message. Name: %s, Size: %d\n", m.Name, m.Size)
 			GlobalState.Lock()
 			saveDir := GlobalState.SaveDir
+			cleanName := filepath.Clean(m.Name)
+			if strings.Contains(cleanName, "..") || filepath.IsAbs(cleanName) {
+				GlobalState.Unlock()
+				sendError("invalid file name")
+				return
+			}
+
 			GlobalState.IsTransferring = true
-			GlobalState.TransferFile = m.Name
+			GlobalState.TransferFile = cleanName
 			GlobalState.CompletedFile = ""
 			GlobalState.TotalBytes = m.Size
 			GlobalState.BytesReceived = 0
@@ -342,7 +349,7 @@ func setupDataChannel(d *webrtc.DataChannel) {
 			}
 
 			// 保存用ファイルを開く
-			targetPath := filepath.Join(saveDir, m.Name)
+			targetPath := filepath.Join(saveDir, cleanName)
 			// ディレクトリ階層がある場合も考慮して自動作成
 			err := os.MkdirAll(filepath.Dir(targetPath), 0755)
 			if err != nil {

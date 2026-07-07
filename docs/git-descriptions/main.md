@@ -3,6 +3,24 @@
 Describe the purpose of this branch here.
 --- START GIT LOG ---
 
+### `29a4643`
+- **Date:** 2026-07-08 07:50:28
+- **Commit Message:** [feat] GitHub Actionsのリリースパイプラインを構築
+- **Description:** Windows, Linux, macOS向けに、タグがプッシュされた際に自動的にビルドを行い、GitHub Releasesにバイナリを公開するワークフロー（release.yml）を追加しました。
+- **Constraint:** - GitHub上で自動的に全対象OSのビルドとリリースが行える必要がある。
+- フロントエンドのビルド（Node.js環境）が完了したのちに、バックエンド（Go環境）でそれをバイナリに埋め込んでビルドする順序が要求される。
+- **Rejected:** - ローカルでのビルド結果を手動でアップロードする方法は、運用コストが高くミスを誘発するため棄却した。
+- **Chosen:** - matrix戦略を用いて、1つのYAMLファイルで複数OS向けのビルドジョブを並列実行・統合する softprops/action-gh-release を採用。
+
+### `441aaaa`
+- **Date:** 2026-07-08 07:42:18
+- **Commit Message:** [fix] E2Eテスト安定化および本番ビルドの最適化
+- **Description:** E2Eテストの安定化のため、フロントエンドの実装およびビルド設定の調整を行いました。Vite設定に babel-plugin-react-remove-properties を導入し、本番ビルド時のみ data-testid を除去する処理を追加。また、UI上のテキスト表現（BudouTextの折り返し等）に依存せずテストが要素を確実に見つけられるよう、主要なボタン等に data-testid を付与しました。ドキュメントおよびTypeScriptの設定も併せて修正しています。
+- **Constraint:** - E2Eテストにおいて日本語改行コンポーネントによるテキストマッチングの不安定さを回避する必要があった。
+- 本番環境ビルド成果物にはテスト用属性を露出させないことが求められていた。
+- **Rejected:** - 画面に表示されるテキストベースでの要素取得は、UI修正のたびにテストが破損しやすいため棄却した。
+- **Chosen:** - テストの安定化を図るため、全テストで data-testid による要素取得を採用。あわせて、Babelプラグインを利用して本番ビルドから自動的にそれらを除去するアプローチを選択。
+
 ### `129740c`
 - **Date:** 2026-07-08 06:43:43
 - **Commit Message:** [feat] E2Eテスト自動化: data-testid追加とセレクタ堅牢化

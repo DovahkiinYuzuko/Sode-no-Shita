@@ -35,6 +35,7 @@ type State struct {
 	sync.Mutex
 	ConnState      string     `json:"connState"` // "disconnected", "connecting", "connected"
 	FSMState       FSMState   `json:"fsmState"`
+	Config         AppConfig  `json:"config"`
 	Role           string     `json:"role"`      // "sender", "receiver"
 	SelectedFiles  []string   `json:"selectedFiles"`
 	RemoteFiles    []FileInfo `json:"remoteFiles"`

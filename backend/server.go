@@ -17,6 +17,12 @@ func writeJSONError(w http.ResponseWriter, status int, errMsg string) {
 }
 
 func StartWebServer(port int, frontendFS fs.FS) error {
+	// 設定ファイルの読み込み
+	cfg := LoadConfig()
+	GlobalState.Lock()
+	GlobalState.Config = cfg
+	GlobalState.Unlock()
+
 	mux := http.NewServeMux()
 
 	// 1. OSダイアログ連携 API
@@ -175,6 +181,43 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 		log.Println("[API] /api/webrtc/reset completed, state is IDLE")
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]string{"status": "reset"})
+	})
+
+	mux.HandleFunc("/api/config/update", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+			return
+		}
+		var req struct {
+			Theme string `json:"theme"`
+			Lang  string `json:"lang"`
+		}
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "Invalid request")
+			return
+		}
+
+		GlobalState.Lock()
+		if req.Theme != "" {
+			GlobalState.Config.Theme = req.Theme
+		}
+		if req.Lang != "" {
+			GlobalState.Config.Lang = req.Lang
+		}
+		cfg := GlobalState.Config
+		GlobalState.Unlock()
+
+		err = SaveConfig(cfg)
+		if err != nil {
+			log.Printf("[API] /api/config/update failed to save: %v\n", err)
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		log.Printf("[API] Config updated: theme=%s, lang=%s\n", cfg.Theme, cfg.Lang)
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
 	})
 
 	// ダウンロード要求 API (個別)

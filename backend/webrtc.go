@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -60,6 +61,16 @@ func init() {
 	// WebRTC APIの初期化
 	s := webrtc.SettingEngine{}
 	
+	// 仮想ネットワークインターフェースを除外
+	s.SetInterfaceFilter(func(interfaceName string) bool {
+		name := strings.ToLower(interfaceName)
+		return !strings.Contains(name, "vethernet") &&
+			!strings.Contains(name, "docker") &&
+			!strings.Contains(name, "virtual") &&
+			!strings.Contains(name, "wsl") &&
+			!strings.Contains(name, "vmware")
+	})
+
 	m := &webrtc.MediaEngine{}
 	_ = m.RegisterDefaultCodecs()
 	
@@ -127,9 +138,15 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 			return "", err
 		}
 
-		// Gather Completeを待つ
+		// Gather Completeを待つ（3秒タイムアウト）
 		gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
-		<-gatherComplete
+		select {
+		case <-gatherComplete:
+			// 収集完了
+		case <-time.After(3 * time.Second):
+			// タイムアウト時はその時点で集まったCandidateで続行
+			fmt.Println("ICE gathering timed out, proceeding with gathered candidates")
+		}
 
 		localDesc := peerConnection.LocalDescription()
 		return CompressSDP(localDesc.SDP)
@@ -188,9 +205,15 @@ func AcceptOfferAndCreateAnswer(offerCode string) (string, error) {
 		return "", err
 	}
 
-	// Gather Completeを待つ
+	// Gather Completeを待つ（3秒タイムアウト）
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
-	<-gatherComplete
+	select {
+	case <-gatherComplete:
+		// 収集完了
+	case <-time.After(3 * time.Second):
+		// タイムアウト時はその時点で集まったCandidateで続行
+		fmt.Println("ICE gathering timed out (answer), proceeding with gathered candidates")
+	}
 
 	localDesc := peerConnection.LocalDescription()
 	return CompressSDP(localDesc.SDP)

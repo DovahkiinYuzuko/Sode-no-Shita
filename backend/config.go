@@ -18,7 +18,7 @@ const configFileName = "sode-no-shita-config.json"
 func LoadConfig() AppConfig {
 	defaultConfig := AppConfig{
 		Theme: "dark",
-		Lang:  "ja",
+		Lang:  "en",
 	}
 
 	// ファイル存在チェック

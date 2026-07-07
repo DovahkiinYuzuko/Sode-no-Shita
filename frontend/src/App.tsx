@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styles from './App.module.css';
-import { locales } from './locales';
+import { locales, defaultLang } from './i18n';
+import { loadDefaultJapaneseParser } from 'budoux';
 import { 
 	Settings, 
 	HelpCircle, 
@@ -19,9 +20,28 @@ interface FileInfo {
 	size: number;
 }
 
+const parser = loadDefaultJapaneseParser();
+
+// 日本語の改行を美しくするためのBudouX折り返しコンポーネント
+function BudouText({ text, enabled = true }: { text: string; enabled?: boolean }) {
+	if (!enabled) {
+		return <>{text}</>;
+	}
+	const chunks = parser.parse(text);
+	return (
+		<>
+			{chunks.map((chunk: string, idx: number) => (
+				<span key={idx} style={{ display: 'inline-block' }}>
+					{chunk}
+				</span>
+			))}
+		</>
+	);
+}
+
 export default function App() {
 	const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-	const [lang, setLang] = useState<string>('ja');
+	const [lang, setLang] = useState<string>(defaultLang);
 	const [connState, setConnState] = useState<string>('disconnected');
 	const [fsmState, setFsmState] = useState<string>('IDLE');
 	const [role, setRole] = useState<string>('sender');
@@ -46,8 +66,8 @@ export default function App() {
 	const [copiedA, setCopiedA] = useState<boolean>(false);
 	const [copiedB, setCopiedB] = useState<boolean>(false);
 
-	// 言語用辞書
-	const t = locales[lang] || locales.ja;
+	// 言語用辞書（見つからない場合はデフォルトの英語フォールバック）
+	const t = locales[lang] || locales[defaultLang] || locales.en;
 
 	// GoのSSEステータス監視
 	useEffect(() => {
@@ -115,12 +135,12 @@ export default function App() {
 			const res = await fetch('/api/dialog/file', { method: 'POST' });
 			const data = await res.json();
 			if (data.error) {
-				setAlertMsg(`Error: ${data.error}`);
+				setAlertMsg(`${t.errSelectFiles} Error: ${data.error}`);
 			} else {
 				setSelectedFiles(data.files || []);
 			}
 		} catch (e) {
-			setAlertMsg(lang === 'ja' ? 'ファイルの選択に失敗しました' : 'Failed to select files');
+			setAlertMsg(t.errSelectFiles);
 		}
 	};
 
@@ -130,12 +150,12 @@ export default function App() {
 			const res = await fetch('/api/dialog/dir', { method: 'POST' });
 			const data = await res.json();
 			if (data.error) {
-				setAlertMsg(`Error: ${data.error}`);
+				setAlertMsg(`${t.errSelectSaveDir} Error: ${data.error}`);
 			} else {
 				setSaveDir(data.dir || '');
 			}
 		} catch (e) {
-			setAlertMsg(lang === 'ja' ? '保存先フォルダの選択に失敗しました' : 'Failed to select save directory');
+			setAlertMsg(t.errSelectSaveDir);
 		}
 	};
 
@@ -145,19 +165,19 @@ export default function App() {
 			const res = await fetch('/api/webrtc/offer', { method: 'POST' });
 			const data = await res.json();
 			if (data.error) {
-				setAlertMsg(`Error: ${data.error}`);
+				setAlertMsg(`${t.errGenOffer} Error: ${data.error}`);
 			} else {
 				setGeneratedCode(data.code);
 			}
 		} catch (e) {
-			setAlertMsg(lang === 'ja' ? '接続コードの生成に失敗しました' : 'Failed to generate connection code');
+			setAlertMsg(t.errGenOffer);
 		}
 	};
 
 	// 接続コードAを解析し、接続コードB (Answer) を生成
 	const acceptOffer = async () => {
 		if (!inputCode) {
-			setAlertMsg(lang === 'ja' ? '接続コードを入力してください' : 'Please enter connection code');
+			setAlertMsg(t.enterCodeWarning);
 			return;
 		}
 		try {
@@ -168,20 +188,20 @@ export default function App() {
 			});
 			const data = await res.json();
 			if (data.error) {
-				setAlertMsg(`Error: ${data.error}`);
+				setAlertMsg(`${t.errGenAnswer} Error: ${data.error}`);
 			} else {
 				setAnswerCode(data.code);
 				setInputCode('');
 			}
 		} catch (e) {
-			setAlertMsg(lang === 'ja' ? 'コードの解析に失敗しました' : 'Failed to parse connection code');
+			setAlertMsg(t.errGenAnswer);
 		}
 	};
 
 	// 接続コードBを入力し、接続を確立
 	const connectAnswer = async () => {
 		if (!inputCode) {
-			setAlertMsg(lang === 'ja' ? '接続コードを入力してください' : 'Please enter connection code');
+			setAlertMsg(t.enterCodeWarning);
 			return;
 		}
 		try {
@@ -192,13 +212,13 @@ export default function App() {
 			});
 			const data = await res.json();
 			if (data.error) {
-				setAlertMsg(`Error: ${data.error}`);
+				setAlertMsg(`${t.errConnect} Error: ${data.error}`);
 			} else {
-				setAlertMsg(lang === 'ja' ? '接続を登録しました。P2P接続完了を待っています...' : 'Registered connection. Waiting for P2P completion...');
+				setAlertMsg(t.connectSuccessMsg);
 				setInputCode('');
 			}
 		} catch (e) {
-			setAlertMsg(lang === 'ja' ? '接続に失敗しました' : 'Failed to connect');
+			setAlertMsg(t.errConnect);
 		}
 	};
 
@@ -212,10 +232,10 @@ export default function App() {
 			});
 			const data = await res.json();
 			if (data.error) {
-				setAlertMsg(`Error: ${data.error}`);
+				setAlertMsg(`${t.errDownload} Error: ${data.error}`);
 			}
 		} catch (e) {
-			setAlertMsg(lang === 'ja' ? 'ダウンロード開始に失敗しました' : 'Failed to start download');
+			setAlertMsg(t.errDownload);
 		}
 	};
 
@@ -225,10 +245,10 @@ export default function App() {
 			const res = await fetch('/api/download/all', { method: 'POST' });
 			const data = await res.json();
 			if (data.error) {
-				setAlertMsg(`Error: ${data.error}`);
+				setAlertMsg(`${t.errBatchDownload} Error: ${data.error}`);
 			}
 		} catch (e) {
-			setAlertMsg(lang === 'ja' ? '一括ダウンロード開始に失敗しました' : 'Failed to start batch download');
+			setAlertMsg(t.errBatchDownload);
 		}
 	};
 
@@ -238,15 +258,15 @@ export default function App() {
 			const res = await fetch('/api/webrtc/reset', { method: 'POST' });
 			const data = await res.json();
 			if (data.error) {
-				setAlertMsg(`Error: ${data.error}`);
+				setAlertMsg(`${t.errReset} Error: ${data.error}`);
 			} else {
 				setGeneratedCode('');
 				setInputCode('');
 				setAnswerCode('');
-				setAlertMsg(lang === 'ja' ? '接続をリセットしました' : 'Connection reset successfully');
+				setAlertMsg(t.resetSuccessMsg);
 			}
 		} catch (e) {
-			setAlertMsg(lang === 'ja' ? 'リセットに失敗しました' : 'Failed to reset');
+			setAlertMsg(t.errReset);
 		}
 	};
 
@@ -282,7 +302,9 @@ export default function App() {
 		<div className={styles.app} data-theme={theme}>
 			<div className={styles.container}>
 				<header className={styles.header}>
-					<h1 className={styles.title}>{t.title}</h1>
+					<h1 className={styles.title}>
+						<BudouText text={t.title} enabled={lang === 'ja'} />
+					</h1>
 					<div className={styles.navActions}>
 						<button className={styles.iconBtn} onClick={() => setShowHelp(true)} title={t.btnHelp}>
 							<HelpCircle size={20} />
@@ -305,10 +327,14 @@ export default function App() {
 				<div className={styles.grid}>
 					{/* P2P接続パネル */}
 					<div className={styles.panel}>
-						<h2 className={styles.sectionTitle}>{t.p2pEstablish}</h2>
+						<h2 className={styles.sectionTitle}>
+							<BudouText text={t.p2pEstablish} enabled={lang === 'ja'} />
+						</h2>
 						
 						<div className={styles.formGroup} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-							<span className={styles.label} style={{ margin: 0 }}>{t.statusLabel}:</span>
+							<span className={styles.label} style={{ margin: 0 }}>
+								<BudouText text={t.statusLabel} enabled={lang === 'ja'} />:
+							</span>
 							<span className={`${styles.statusBadge} ${styles[connState]}`}>
 								{connState === 'connected' ? t.statusConnected : connState === 'connecting' ? t.statusConnecting : t.statusDisconnected}
 							</span>
@@ -322,12 +348,14 @@ export default function App() {
 							<>
 								<div className={styles.formGroup} style={{ marginTop: '20px' }}>
 									<button className={styles.button} onClick={createOffer}>
-										{t.btnCreateOffer}
+										<BudouText text={t.btnCreateOffer} enabled={lang === 'ja'} />
 									</button>
 								</div>
 
 								<div className={styles.formGroup}>
-									<span className={styles.label}>{t.placeholderCode}</span>
+									<span className={styles.label}>
+										<BudouText text={t.placeholderCode} enabled={lang === 'ja'} />
+									</span>
 									<textarea 
 										className={styles.textarea} 
 										placeholder={t.placeholderCode}
@@ -338,7 +366,7 @@ export default function App() {
 
 								<div className={styles.formGroup}>
 									<button className={`${styles.button} ${styles.buttonSecondary}`} onClick={acceptOffer}>
-										{t.btnCreateAnswer}
+										<BudouText text={t.btnCreateAnswer} enabled={lang === 'ja'} />
 									</button>
 								</div>
 							</>
@@ -348,7 +376,9 @@ export default function App() {
 						{fsmState === 'GENERATING_OFFER' && (
 							<div className={styles.loaderWrapper}>
 								<div className={styles.spinner} />
-								<span className={styles.label}>{t.generatingOffer}</span>
+								<span className={styles.label}>
+									<BudouText text={t.generatingOffer} enabled={lang === 'ja'} />
+								</span>
 							</div>
 						)}
 
@@ -356,7 +386,9 @@ export default function App() {
 						{fsmState === 'GENERATING_ANSWER' && (
 							<div className={styles.loaderWrapper}>
 								<div className={styles.spinner} />
-								<span className={styles.label}>{t.generatingAnswer}</span>
+								<span className={styles.label}>
+									<BudouText text={t.generatingAnswer} enabled={lang === 'ja'} />
+								</span>
 							</div>
 						)}
 
@@ -365,7 +397,9 @@ export default function App() {
 							<>
 								{generatedCode && (
 									<div className={styles.formGroup} style={{ marginTop: '20px' }}>
-										<span className={styles.label}>{t.labelOffer}</span>
+										<span className={styles.label}>
+											<BudouText text={t.labelOffer} enabled={lang === 'ja'} />
+										</span>
 										<div className={styles.copyGroup}>
 											<textarea 
 												className={styles.textarea} 
@@ -381,7 +415,9 @@ export default function App() {
 								)}
 
 								<div className={styles.formGroup}>
-									<span className={styles.label}>{t.btnConnect}</span>
+									<span className={styles.label}>
+										<BudouText text={t.btnConnect} enabled={lang === 'ja'} />
+									</span>
 									<textarea 
 										className={styles.textarea} 
 										placeholder={t.placeholderCode}
@@ -392,7 +428,7 @@ export default function App() {
 
 								<div className={styles.formGroup}>
 									<button className={styles.button} onClick={connectAnswer}>
-										{t.btnConnect}
+										<BudouText text={t.btnConnect} enabled={lang === 'ja'} />
 									</button>
 								</div>
 							</>
@@ -403,12 +439,16 @@ export default function App() {
 							<>
 								<div className={styles.loaderWrapper}>
 									<div className={styles.spinner} />
-									<span className={styles.label}>{t.connectingMsg}</span>
+									<span className={styles.label}>
+										<BudouText text={t.connectingMsg} enabled={lang === 'ja'} />
+									</span>
 								</div>
 								
 								{answerCode && (
 									<div className={styles.formGroup}>
-										<span className={styles.label}>{t.labelAnswer}</span>
+										<span className={styles.label}>
+											<BudouText text={t.labelAnswer} enabled={lang === 'ja'} />
+										</span>
 										<div className={styles.copyGroup}>
 											<textarea 
 												className={styles.textarea} 
@@ -429,10 +469,10 @@ export default function App() {
 						{fsmState === 'FAILED' && (
 							<div className={styles.loaderWrapper}>
 								<span className={styles.label} style={{ color: 'var(--accent)', fontWeight: 'bold' }}>
-									{lang === 'ja' ? '接続に失敗しました。タイムアウトまたは切断されました。' : 'Connection failed. Timed out or disconnected.'}
+									<BudouText text={t.connectionFailedUI} enabled={lang === 'ja'} />
 								</span>
 								<button className={`${styles.button} ${styles.buttonSecondary}`} style={{ width: 'auto', padding: '10px 24px' }} onClick={resetFSM}>
-									{t.btnReset}
+									<BudouText text={t.btnReset} enabled={lang === 'ja'} />
 								</button>
 							</div>
 						)}
@@ -441,7 +481,7 @@ export default function App() {
 						{fsmState === 'CONNECTED' && (
 							<div className={styles.formGroup} style={{ marginTop: '20px' }}>
 								<button className={`${styles.button} ${styles.buttonSecondary}`} onClick={resetFSM}>
-									{t.btnReset}
+									<BudouText text={t.btnReset} enabled={lang === 'ja'} />
 								</button>
 							</div>
 						)}
@@ -449,22 +489,28 @@ export default function App() {
 
 					{/* ファイル共有・転送パネル */}
 					<div className={styles.panel}>
-						<h2 className={styles.sectionTitle}>{t.shareDownload}</h2>
+						<h2 className={styles.sectionTitle}>
+							<BudouText text={t.shareDownload} enabled={lang === 'ja'} />
+						</h2>
 
 						{/* 送信側の設定 */}
 						<div className={styles.panel} style={{ marginBottom: '16px', padding: '16px', background: 'rgba(0,0,0,0.02)' }}>
 							<h3 style={{ margin: '0 0 12px 0', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
 								<Upload size={16} color="var(--accent)" />
-								<span>{t.sendTitle}</span>
+								<span>
+									<BudouText text={t.sendTitle} enabled={lang === 'ja'} />
+								</span>
 							</h3>
 							<div className={styles.formGroup}>
 								<button className={styles.button} onClick={selectFiles}>
-									{t.btnSelectSendFiles}
+									<BudouText text={t.btnSelectSendFiles} enabled={lang === 'ja'} />
 								</button>
 							</div>
 							{selectedFiles.length > 0 && (
 								<div>
-									<span className={styles.label}>{t.labelSelectedFiles}:</span>
+									<span className={styles.label}>
+										<BudouText text={t.labelSelectedFiles} enabled={lang === 'ja'} />:
+									</span>
 									<ul style={{ paddingLeft: '20px', margin: '8px 0', fontSize: '13px', lineHeight: 1.5 }}>
 										{selectedFiles.map((f, i) => (
 											<li key={i}>{f.split('\\').pop()?.split('/').pop()}</li>
@@ -478,16 +524,20 @@ export default function App() {
 						<div className={styles.panel} style={{ padding: '16px', background: 'rgba(0,0,0,0.02)' }}>
 							<h3 style={{ margin: '0 0 12px 0', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
 								<Download size={16} color="var(--accent)" />
-								<span>{t.recvTitle}</span>
+								<span>
+									<BudouText text={t.recvTitle} enabled={lang === 'ja'} />
+								</span>
 							</h3>
 							<div className={styles.formGroup}>
 								<button className={`${styles.button} ${styles.buttonSecondary}`} onClick={selectSaveDir}>
-									{t.btnSelectSaveDir}
+									<BudouText text={t.btnSelectSaveDir} enabled={lang === 'ja'} />
 								</button>
 							</div>
 							{saveDir && (
 								<div style={{ fontSize: '13px', wordBreak: 'break-all', lineHeight: 1.4 }}>
-									<span className={styles.label}>{t.labelSaveDir}:</span>
+									<span className={styles.label}>
+										<BudouText text={t.labelSaveDir} enabled={lang === 'ja'} />:
+									</span>
 									<code>{saveDir}</code>
 								</div>
 							)}
@@ -497,10 +547,12 @@ export default function App() {
 						{connState === 'connected' && (
 							<div style={{ marginTop: '24px' }}>
 								<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-									<h3 style={{ margin: '0', fontSize: '15px', fontWeight: 700 }}>{t.fileListTitle}</h3>
+									<h3 style={{ margin: '0', fontSize: '15px', fontWeight: 700 }}>
+										<BudouText text={t.fileListTitle} enabled={lang === 'ja'} />
+									</h3>
 									{remoteFiles.length > 0 && role === 'receiver' && (
 										<button className={styles.downloadBtn} onClick={downloadAll}>
-											{t.btnDownloadAll}
+											<BudouText text={t.btnDownloadAll} enabled={lang === 'ja'} />
 										</button>
 									)}
 								</div>
@@ -515,7 +567,7 @@ export default function App() {
 												</div>
 												{role === 'receiver' && (
 													<button className={styles.downloadBtn} onClick={() => downloadFile(file.name)}>
-														{lang === 'ja' ? 'ダウンロード' : 'Download'}
+														{t.downloadLabel}
 													</button>
 												)}
 											</div>
@@ -523,7 +575,7 @@ export default function App() {
 									</div>
 								) : (
 									<p style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', margin: '24px 0', lineHeight: 1.5 }}>
-										{role === 'sender' ? t.sentListMsg : t.waitingFiles}
+										<BudouText text={role === 'sender' ? t.sentListMsg : t.waitingFiles} enabled={lang === 'ja'} />
 									</p>
 								)}
 							</div>
@@ -558,7 +610,9 @@ export default function App() {
 						<div className={styles.modalHeader}>
 							<h3 className={styles.modalTitle}>
 								<Settings size={18} />
-								<span>{t.settingsTitle}</span>
+								<span>
+									<BudouText text={t.settingsTitle} enabled={lang === 'ja'} />
+								</span>
 							</h3>
 							<button className={styles.modalClose} onClick={() => setShowSettings(false)}>
 								<X size={20} />
@@ -566,7 +620,9 @@ export default function App() {
 						</div>
 						<div className={styles.settingsGroup}>
 							<div className={styles.settingsRow}>
-								<span>{t.selectLang}</span>
+								<span>
+									<BudouText text={t.selectLang} enabled={lang === 'ja'} />
+								</span>
 								<select 
 									className={styles.select} 
 									value={lang} 
@@ -576,12 +632,17 @@ export default function App() {
 										updateConfig(undefined, nextLang);
 									}}
 								>
-									<option value="ja">日本語 (Japanese)</option>
-									<option value="en">English</option>
+									{Object.keys(locales).map((key) => (
+										<option key={key} value={key}>
+											{key === 'ja' ? '日本語 (Japanese)' : key === 'en' ? 'English (US)' : key.toUpperCase()}
+										</option>
+									))}
 								</select>
 							</div>
 							<div className={styles.settingsRow}>
-								<span>{t.selectTheme}</span>
+								<span>
+									<BudouText text={t.selectTheme} enabled={lang === 'ja'} />
+								</span>
 								<div style={{ display: 'flex', gap: '8px' }}>
 									<button 
 										className={`${styles.iconBtn} ${theme === 'light' ? styles.active : ''}`}
@@ -617,7 +678,9 @@ export default function App() {
 						<div className={styles.modalHeader}>
 							<h3 className={styles.modalTitle}>
 								<HelpCircle size={18} />
-								<span>{t.helpTitle}</span>
+								<span>
+									<BudouText text={t.helpTitle} enabled={lang === 'ja'} />
+								</span>
 							</h3>
 							<button className={styles.modalClose} onClick={() => setShowHelp(false)}>
 								<X size={20} />
@@ -626,7 +689,9 @@ export default function App() {
 						<div>
 							<ol className={styles.helpList}>
 								{t.helpSteps.map((step, idx) => (
-									<li key={idx} className={styles.helpItem}>{step}</li>
+									<li key={idx} className={styles.helpItem}>
+										<BudouText text={step} enabled={lang === 'ja'} />
+									</li>
 								))}
 							</ol>
 						</div>

@@ -39,6 +39,14 @@ function BudouText({ text, enabled = true }: { text: string; enabled?: boolean }
 	);
 }
 
+// プレーンテキスト用のBudouX改行挿入ヘルパー（ゼロ幅スペース \u200B を用いる）
+function toBudouString(text: string, enabled = true): string {
+	if (!enabled) {
+		return text;
+	}
+	return parser.parse(text).join('\u200B');
+}
+
 export default function App() {
 	const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 	const [lang, setLang] = useState<string>(defaultLang);
@@ -59,6 +67,7 @@ export default function App() {
 	const [inputCode, setInputCode] = useState<string>('');
 	const [answerCode, setAnswerCode] = useState<string>('');
 	const [alertMsg, setAlertMsg] = useState<string>('');
+	const [transferComplete, setTransferComplete] = useState<{ fileName: string; role: 'sender' | 'receiver' } | null>(null);
 
 	// UI状態
 	const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -72,22 +81,41 @@ export default function App() {
 	// GoのSSEステータス監視
 	useEffect(() => {
 		const eventSource = new EventSource('/api/status');
+		let prevCompletedFile = '';
 
 		eventSource.onmessage = (event) => {
 			try {
 				const state = JSON.parse(event.data);
+				const nextIsTransferring = state.isTransferring || false;
+				const nextRole = state.role;
+				const nextBytesReceived = state.bytesReceived || 0;
+				const nextBytesSent = state.bytesSent || 0;
+				const nextTotalBytes = state.totalBytes || 0;
+				const nextTransferFile = state.transferFile || '';
+				const nextCompletedFile = state.completedFile || '';
+
+				// 送受信完了検知
+				if (nextCompletedFile && nextCompletedFile !== prevCompletedFile) {
+					setTransferComplete({
+						fileName: nextCompletedFile,
+						role: nextRole
+					});
+				}
+
 				setConnState(state.connState);
 				setFsmState(state.fsmState || 'IDLE');
 				setRole(state.role);
 				setSelectedFiles(state.selectedFiles || []);
 				setRemoteFiles(state.remoteFiles || []);
 				setSaveDir(state.saveDir || '');
-				setTransferFile(state.transferFile || '');
-				setBytesSent(state.bytesSent || 0);
-				setBytesReceived(state.bytesReceived || 0);
-				setTotalBytes(state.totalBytes || 0);
+				setTransferFile(nextTransferFile);
+				setBytesSent(nextBytesSent);
+				setBytesReceived(nextBytesReceived);
+				setTotalBytes(nextTotalBytes);
 				setSpeed(state.speed || 0);
-				setIsTransferring(state.isTransferring || false);
+				setIsTransferring(nextIsTransferring);
+
+				prevCompletedFile = nextCompletedFile;
 
 				// 設定の同期
 				if (state.config) {
@@ -368,7 +396,7 @@ export default function App() {
 									</span>
 									<textarea 
 										className={styles.textarea} 
-										placeholder={t.placeholderCode}
+										placeholder={toBudouString(t.placeholderCode, lang === 'ja')}
 										value={inputCode}
 										onChange={(e) => setInputCode(e.target.value)}
 									/>
@@ -430,7 +458,7 @@ export default function App() {
 									</span>
 									<textarea 
 										className={styles.textarea} 
-										placeholder={t.placeholderCode}
+										placeholder={toBudouString(t.placeholderCode, lang === 'ja')}
 										value={inputCode}
 										onChange={(e) => setInputCode(e.target.value)}
 									/>
@@ -704,6 +732,51 @@ export default function App() {
 									</li>
 								))}
 							</ol>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* 送受信完了モーダル */}
+			{transferComplete && (
+				<div className={styles.modalOverlay} onClick={() => setTransferComplete(null)}>
+					<div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+						<div className={styles.modalHeader}>
+							<h3 className={styles.modalTitle}>
+								<Check size={18} color="var(--accent)" />
+								<span>
+									<BudouText 
+										text={transferComplete.role === 'receiver' ? t.downloadCompleteTitle : t.uploadCompleteTitle} 
+										enabled={lang === 'ja'} 
+									/>
+								</span>
+							</h3>
+							<button className={styles.modalClose} onClick={() => setTransferComplete(null)}>
+								<X size={20} />
+							</button>
+						</div>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center', padding: '10px 0' }}>
+							<p style={{ fontSize: '14px', margin: 0, lineHeight: 1.5 }}>
+								<BudouText 
+									text={transferComplete.role === 'receiver' ? t.downloadCompleteMsg : t.uploadCompleteMsg} 
+									enabled={lang === 'ja'} 
+								/>
+							</p>
+							<div style={{ 
+								width: '100%', 
+								padding: '12px', 
+								backgroundColor: 'rgba(0, 0, 0, 0.05)', 
+								borderRadius: 'var(--radius-input)',
+								fontSize: '13px',
+								fontWeight: 600,
+								wordBreak: 'break-all',
+								fontFamily: 'monospace'
+							}}>
+								{transferComplete.fileName}
+							</div>
+							<button className={styles.button} style={{ width: 'auto', padding: '10px 32px', marginTop: '8px' }} onClick={() => setTransferComplete(null)}>
+								{t.btnOk}
+							</button>
 						</div>
 					</div>
 				</div>

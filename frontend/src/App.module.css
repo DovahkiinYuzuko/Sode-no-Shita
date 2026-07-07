@@ -129,6 +129,8 @@
   resize: vertical;
   min-height: 80px;
   outline: none;
+  word-break: break-all;
+  overflow-wrap: break-word;
   transition: border-color 0.2s;
 }
 

@@ -67,7 +67,12 @@ const en: Translation = {
 	roleLabel: "Your Role",
 	roleSender: "Sender (Share Files)",
 	roleReceiver: "Receiver (Download Files)",
-	roleUnknown: "Undecided (Determined after connection)"
+	roleUnknown: "Undecided (Determined after connection)",
+	downloadCompleteTitle: "Download Complete",
+	downloadCompleteMsg: "File download has completed successfully.",
+	uploadCompleteTitle: "Upload Complete",
+	uploadCompleteMsg: "File upload has completed successfully.",
+	btnOk: "OK"
 };
 
 export default en;

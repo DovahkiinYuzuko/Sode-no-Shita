@@ -67,7 +67,12 @@ const ja: Translation = {
 	roleLabel: "あなたの役割",
 	roleSender: "送信側 (ファイルを共有する側)",
 	roleReceiver: "受信側 (ファイルをダウンロードする側)",
-	roleUnknown: "未設定 (接続後に自動で決まるよ)"
+	roleUnknown: "未設定 (接続後に自動で決まります)",
+	downloadCompleteTitle: "ダウンロード完了",
+	downloadCompleteMsg: "ファイルのダウンロードが完了しました。",
+	uploadCompleteTitle: "送信完了",
+	uploadCompleteMsg: "ファイルの送信が完了しました。",
+	btnOk: "了解"
 };
 
 export default ja;

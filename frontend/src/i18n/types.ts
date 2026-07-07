@@ -60,4 +60,9 @@ export interface Translation {
 	roleSender: string;
 	roleReceiver: string;
 	roleUnknown: string;
+	downloadCompleteTitle: string;
+	downloadCompleteMsg: string;
+	uploadCompleteTitle: string;
+	uploadCompleteMsg: string;
+	btnOk: string;
 }

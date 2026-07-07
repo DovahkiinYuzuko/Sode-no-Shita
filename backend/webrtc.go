@@ -41,6 +41,7 @@ type State struct {
 	RemoteFiles    []FileInfo `json:"remoteFiles"`
 	SaveDir        string     `json:"saveDir"`
 	TransferFile   string     `json:"transferFile"`
+	CompletedFile  string     `json:"completedFile"`
 	BytesSent      int64      `json:"bytesSent"`
 	BytesReceived  int64      `json:"bytesReceived"`
 	TotalBytes     int64      `json:"totalBytes"`
@@ -329,6 +330,7 @@ func setupDataChannel(d *webrtc.DataChannel) {
 			saveDir := GlobalState.SaveDir
 			GlobalState.IsTransferring = true
 			GlobalState.TransferFile = m.Name
+			GlobalState.CompletedFile = ""
 			GlobalState.TotalBytes = m.Size
 			GlobalState.BytesReceived = 0
 			GlobalState.Unlock()
@@ -363,6 +365,7 @@ func setupDataChannel(d *webrtc.DataChannel) {
 				currentFile = nil
 			}
 			GlobalState.Lock()
+			GlobalState.CompletedFile = GlobalState.TransferFile
 			GlobalState.IsTransferring = false
 			GlobalState.Unlock()
 
@@ -479,6 +482,7 @@ func handleFileSendRequest(fileName string) error {
 	GlobalState.Lock()
 	GlobalState.IsTransferring = true
 	GlobalState.TransferFile = fileName
+	GlobalState.CompletedFile = ""
 	GlobalState.TotalBytes = stat.Size()
 	GlobalState.Unlock()
 
@@ -508,6 +512,7 @@ func handleFileSendRequest(fileName string) error {
 	_ = dataChannel.SendText(string(bEnd))
 
 	GlobalState.Lock()
+	GlobalState.CompletedFile = fileName
 	GlobalState.IsTransferring = false
 	GlobalState.Unlock()
 
@@ -538,6 +543,7 @@ func handleZipSendRequest() error {
 	GlobalState.Lock()
 	GlobalState.IsTransferring = true
 	GlobalState.TransferFile = "archive.zip"
+	GlobalState.CompletedFile = ""
 	GlobalState.TotalBytes = totalSize
 	GlobalState.Unlock()
 
@@ -564,7 +570,14 @@ func handleZipSendRequest() error {
 				continue
 			}
 			
-			header, err := zip.FileInfoHeader(nil) // ダミーヘッダー取得
+			stat, err := file.Stat()
+			if err != nil {
+				fmt.Printf("Zip stat error: %v\n", err)
+				_ = file.Close()
+				continue
+			}
+			
+			header, err := zip.FileInfoHeader(stat)
 			if err == nil {
 				header.Name = filepath.Base(fp)
 				header.Method = zip.Deflate // 圧縮方式
@@ -593,6 +606,7 @@ func handleZipSendRequest() error {
 	_ = dataChannel.SendText(string(bEnd))
 
 	GlobalState.Lock()
+	GlobalState.CompletedFile = "archive.zip"
 	GlobalState.IsTransferring = false
 	GlobalState.Unlock()
 

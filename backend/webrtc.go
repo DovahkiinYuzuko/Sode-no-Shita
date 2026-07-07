@@ -361,7 +361,7 @@ func sendError(errMsg string) {
 }
 
 // フロー制御付きData Channel送信
-func sendWithFlowControl(r io.Reader, totalSize int64) error {
+func sendWithFlowControl(r io.Reader) error {
 	buf := make([]byte, 32768) // 32KBチャンク
 	
 	GlobalState.Lock()
@@ -442,7 +442,7 @@ func handleFileSendRequest(fileName string) error {
 	go measureSpeed()
 
 	// 2. バイナリデータ送信
-	err = sendWithFlowControl(file, stat.Size())
+	err = sendWithFlowControl(file)
 	if err != nil {
 		return err
 	}
@@ -526,7 +526,7 @@ func handleZipSendRequest() error {
 	}()
 
 	// 2. パイプからの読み込みデータをフロー制御で送信
-	err := sendWithFlowControl(pr, totalSize)
+	err := sendWithFlowControl(pr)
 	if err != nil {
 		_ = pr.CloseWithError(err)
 		return err
@@ -567,15 +567,13 @@ func measureSpeed() {
 			break
 		}
 
-		select {
-		case <-ticker.C:
-			delta := currentBytes - lastBytes
-			lastBytes = currentBytes
-			
-			GlobalState.Lock()
-			GlobalState.Speed = float64(delta) // bytes/sec
-			GlobalState.Unlock()
-		}
+		<-ticker.C
+		delta := currentBytes - lastBytes
+		lastBytes = currentBytes
+		
+		GlobalState.Lock()
+		GlobalState.Speed = float64(delta) // bytes/sec
+		GlobalState.Unlock()
 	}
 	
 	GlobalState.Lock()

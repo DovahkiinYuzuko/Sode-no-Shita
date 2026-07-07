@@ -2,5 +2,26 @@
 *
 !.gitignore
 # ---AUTO-Generated---
+# .gitignores/backend.gitignore
+!go.mod
+!go.sum
+!backend/
+!backend/**
+# .gitignores/docs.gitignore
+!docs/
+!docs/variables'n'functions/
+!docs/variables'n'functions/**
+!docs/git-descriptions/
+!docs/git-descriptions/**
+# .gitignores/frontend.gitignore
+!frontend/
+!frontend/public/
+!frontend/public/**
+!frontend/src/
+!frontend/src/**
+!frontend/package.json
+!frontend/tsconfig.json
+!frontend/vite.config.ts
 # .gitignores/袖の下のファイル.gitignore
-
+!main.go
+!README.md

@@ -1,0 +1,297 @@
+.app {
+  /* GitHub人気 (Light Mode) */
+  --bg: #ffffff;
+  --panel: #f8fafc;
+  --text: #0f172a;
+  --muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #1d4ed8;
+  --border: #e2e8f0;
+  --radius-panel: 6px;
+  --radius-input: 6px;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
+  padding: 24px;
+}
+
+.app[data-theme='dark'] {
+  /* ユズコ専用ダーク */
+  --bg: #111111;
+  --panel: #1a1a1a;
+  --text: #eeeeee;
+  --muted: #b5b5b5;
+  --accent: #0ea5e9;
+  --accent-hover: #38bdf8;
+  --border: #2a2a2a;
+  --radius-panel: 12px;
+  --radius-input: 10px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.themeToggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  padding: 8px 16px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.themeToggle:hover {
+  background-color: var(--panel);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.panel {
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s ease;
+}
+
+.panel:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.sectionTitle {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  border-left: 4px solid var(--accent);
+  padding-left: 10px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  color: var(--text);
+  padding: 12px;
+  font-family: monospace;
+  font-size: 12px;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.button {
+  background-color: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-input);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button:hover {
+  background-color: var(--accent-hover);
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.buttonSecondary {
+  background-color: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  box-shadow: none;
+}
+
+.buttonSecondary:hover {
+  background-color: var(--panel);
+}
+
+.statusText {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.connected {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.connecting {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.disconnected {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.fileList {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  overflow: hidden;
+}
+
+.fileItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.fileItem:last-child {
+  border-bottom: none;
+}
+
+.fileDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.fileName {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fileSize {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.downloadBtn {
+  background-color: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-input);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.downloadBtn:hover {
+  background-color: var(--accent-hover);
+}
+
+.progressContainer {
+  margin-top: 24px;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  padding: 20px;
+}
+
+.progressBarBackground {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progressBarFill {
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.transferMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}

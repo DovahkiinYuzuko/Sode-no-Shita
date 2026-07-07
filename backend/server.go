@@ -132,6 +132,77 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 		_ = json.NewEncoder(w).Encode(map[string]string{"status": "connected"})
 	})
 
+	// ダウンロード要求 API (個別)
+	mux.HandleFunc("/api/download/file", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+			return
+		}
+		var req struct {
+			Name string `json:"name"`
+		}
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil || req.Name == "" {
+			writeJSONError(w, http.StatusBadRequest, "Invalid file name")
+			return
+		}
+
+		if dataChannel == nil {
+			writeJSONError(w, http.StatusInternalServerError, "P2P connection not established")
+			return
+		}
+
+		msg := Message{
+			Type: "request",
+			Name: req.Name,
+		}
+		bytesMsg, err := json.Marshal(msg)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		err = dataChannel.SendText(string(bytesMsg))
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "request_sent"})
+	})
+
+	// ダウンロード要求 API (一括)
+	mux.HandleFunc("/api/download/all", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+			return
+		}
+
+		if dataChannel == nil {
+			writeJSONError(w, http.StatusInternalServerError, "P2P connection not established")
+			return
+		}
+
+		msg := Message{
+			Type: "request_all",
+		}
+		bytesMsg, err := json.Marshal(msg)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		err = dataChannel.SendText(string(bytesMsg))
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "request_all_sent"})
+	})
+
 	// 3. SSEによるリアルタイムステータス進捗配信 API
 	mux.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/event-stream")

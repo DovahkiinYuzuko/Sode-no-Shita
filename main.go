@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"flag"
 	"fmt"
 	"io/fs"
 	"os/exec"
@@ -30,7 +31,9 @@ func openBrowser(url string) {
 }
 
 func main() {
-	port := 8080
+	portOpt := flag.Int("port", 8080, "Port to listen on")
+	flag.Parse()
+	port := *portOpt
 	url := fmt.Sprintf("http://localhost:%d", port)
 
 	// フロントエンドのサブディレクトリを展開

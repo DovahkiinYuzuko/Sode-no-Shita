@@ -3,6 +3,20 @@
 Describe the purpose of this branch here.
 --- START GIT LOG ---
 
+### `129740c`
+- **Date:** 2026-07-08 06:43:43
+- **Commit Message:** [feat] E2Eテスト自動化: data-testid追加とセレクタ堅牢化
+- **Constraint:** nth()ベースのセレクタはヘッダーアイコンボタンにより意図しない要素を掴む危険があった
+- **Rejected:** 既存のlocator('button').nth(1)セレクタの微修正（根本解決にならないため却下）
+- **Chosen:** App.tsxに5箇所のdata-testid属性を追加し、e2e.spec.tsをgetByTestId()に全面移行。ダウンロード後のfs.existsSync()によるファイル実在確認も追加
+
+### `94e6b6d`
+- **Date:** 2026-07-08 06:12:46
+- **Commit Message:** [style] ステータス行縦積み化・コピーボタンアイコン化
+- **Constraint:** ステータス行が横一列に詰まりすぎて日本語テキストが読みにくかった。コピーボタンもテキスト付きで横に張り出しており、textareaが狭くなっていた。
+- **Rejected:** flex-direction: rowのまま要素を間引く案（情報が欠落する）
+- **Chosen:** ステータス行をflex-direction: columnの縦積みに変更し、コピーボタンはtextarea右上へabsolute配置のアイコンのみに絞る
+
 ### `dec8cea`
 - **Date:** 2026-07-08 02:20:32
 - **Commit Message:** [docs] E2Eファイル転送テストの仕様書を追加・更新

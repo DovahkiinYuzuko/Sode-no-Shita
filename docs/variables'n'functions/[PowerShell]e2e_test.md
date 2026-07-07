@@ -7,7 +7,7 @@ tags:
 exports: []
 imports:
   - "frontend/tests/e2e.spec.ts"
-  - "ビルド.ps1"
+  - "build.ps1"
 ---
 
 ## 概要
@@ -18,7 +18,7 @@ imports:
 
 ```mermaid
 graph TD
-    e2e_test_ps1["e2e_test.ps1"] --> build_ps1["ビルド.ps1"]
+    e2e_test_ps1["e2e_test.ps1"] --> build_ps1["build.ps1"]
     e2e_test_ps1 --> e2e_spec_ts["frontend/tests/e2e.spec.ts"]
     e2e_spec_ts --> go_backend["Go Backend (sode-no-shita-test.exe)"]
 ```

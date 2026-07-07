@@ -67,6 +67,7 @@ export function TransferCompleteModal({
 					</div>
 					<button
 						className={styles.button}
+						data-testid="btn-close-modal"
 						style={{ width: 'auto', padding: '10px 32px', marginTop: '8px' }}
 						onClick={onClose}
 					>

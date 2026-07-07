@@ -374,7 +374,7 @@ export default function App() {
 						{fsmState === 'IDLE' && (
 							<>
 								<div className={styles.formGroup} style={{ marginTop: '20px' }}>
-									<button className={styles.button} onClick={createOffer}>
+									<button className={styles.button} data-testid="btn-create-offer" onClick={createOffer}>
 										<BudouText text={t.btnCreateOffer} enabled={lang === 'ja'} />
 									</button>
 								</div>
@@ -531,7 +531,7 @@ export default function App() {
 								</span>
 							</h3>
 							<div className={styles.formGroup}>
-								<button className={styles.button} onClick={selectFiles}>
+								<button className={styles.button} data-testid="btn-select-files" onClick={selectFiles}>
 									<BudouText text={t.btnSelectSendFiles} enabled={lang === 'ja'} />
 								</button>
 							</div>
@@ -560,7 +560,7 @@ export default function App() {
 								</span>
 							</h3>
 							<div className={styles.formGroup}>
-								<button className={`${styles.button} ${styles.buttonSecondary}`} onClick={selectSaveDir}>
+								<button className={`${styles.button} ${styles.buttonSecondary}`} data-testid="btn-select-save-dir" onClick={selectSaveDir}>
 									<BudouText text={t.btnSelectSaveDir} enabled={lang === 'ja'} />
 								</button>
 							</div>
@@ -582,7 +582,7 @@ export default function App() {
 										<BudouText text={t.fileListTitle} enabled={lang === 'ja'} />
 									</h3>
 									{remoteFiles.length > 0 && role === 'receiver' && (
-										<button className={styles.downloadBtn} onClick={downloadAll}>
+										<button className={styles.downloadBtn} data-testid="btn-download-all" onClick={downloadAll}>
 											<BudouText text={t.btnDownloadAll} enabled={lang === 'ja'} />
 										</button>
 									)}
@@ -597,7 +597,7 @@ export default function App() {
 													<span className={styles.fileSize}>{formatSize(file.size)}</span>
 												</div>
 												{role === 'receiver' && (
-													<button className={styles.downloadBtn} onClick={() => downloadFile(file.name)}>
+													<button className={styles.downloadBtn} data-testid="btn-download-file" onClick={() => downloadFile(file.name)}>
 														{t.downloadLabel}
 													</button>
 												)}

@@ -76,11 +76,7 @@
   gap: 24px;
 }
 
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
+/* 箇条書きのイメージで縦並びにするため、2カラムレイアウトを削除 */
 
 .panel {
   background-color: var(--panel);
@@ -106,6 +102,13 @@
 
 .formGroup {
   margin-bottom: 16px;
+}
+
+.statusStack {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .label {

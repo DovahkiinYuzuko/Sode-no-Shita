@@ -121,7 +121,7 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 		}
 	})
 
-	peerConnection.OnICEGatheringStateChange(func(state webrtc.ICEGatheringState) {
+	peerConnection.OnICEGatheringStateChange(func(state webrtc.ICEGathererState) {
 		log.Printf("[WebRTC] ICE Gathering State changed: %s\n", state.String())
 	})
 

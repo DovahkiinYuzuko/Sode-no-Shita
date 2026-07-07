@@ -11,8 +11,8 @@ imports:
   - "backend/dialog.go"
 ---
 
-### `StartWebServer` (L18-178)
+### (Function) `StartWebServer` (L19-294)
+* **Line Number:** L19-294
 * **Description:** HTTP APIハンドラを登録し、埋め込みWebサーバーを起動する。
 * **Arguments:**
   * `port` (int): 起動するポート番号
-```

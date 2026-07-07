@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import styles from './App.module.css';
 import { locales, defaultLang } from './i18n';
-import { loadDefaultJapaneseParser } from 'budoux';
+import { BudouText, toBudouString } from './components/BudouText';
+import { SettingsModal } from './components/SettingsModal';
+import { HelpModal } from './components/HelpModal';
+import { TransferCompleteModal } from './components/TransferCompleteModal';
 import { 
 	Settings, 
 	HelpCircle, 
@@ -10,41 +13,11 @@ import {
 	Upload, 
 	Download, 
 	RefreshCw, 
-	Moon, 
-	Sun, 
-	X
 } from './icons';
 
 interface FileInfo {
 	name: string;
 	size: number;
-}
-
-const parser = loadDefaultJapaneseParser();
-
-// 日本語の改行を美しくするためのBudouX折り返しコンポーネント
-function BudouText({ text, enabled = true }: { text: string; enabled?: boolean }) {
-	if (!enabled) {
-		return <>{text}</>;
-	}
-	const chunks = parser.parse(text);
-	return (
-		<>
-			{chunks.map((chunk: string, idx: number) => (
-				<span key={idx} style={{ display: 'inline-block' }}>
-					{chunk}
-				</span>
-			))}
-		</>
-	);
-}
-
-// プレーンテキスト用のBudouX改行挿入ヘルパー（ゼロ幅スペース \u200B を用いる）
-function toBudouString(text: string, enabled = true): string {
-	if (!enabled) {
-		return text;
-	}
-	return parser.parse(text).join('\u200B');
 }
 
 export default function App() {
@@ -93,7 +66,7 @@ export default function App() {
 				const nextCompletedFile = state.completedFile || '';
 				// 送受信完了検知
 				if (nextCompletedFile) {
-					console.warn("[Transfer Complete Detected]", {
+					console.warn(t.logTransferComplete, {
 						fileName: nextCompletedFile,
 						role: nextRole
 					});
@@ -127,12 +100,12 @@ export default function App() {
 					if (state.config.lang) setLang(state.config.lang);
 				}
 			} catch (e) {
-				console.error('SSE JSON parse error:', e);
+				console.error(t.logSseParseError, e);
 			}
 		};
 
 		eventSource.onerror = (err) => {
-			console.error('SSE Error:', err);
+			console.error(t.logSseError, err);
 		};
 
 		return () => {
@@ -157,7 +130,7 @@ export default function App() {
 				setAlertMsg(`Error: ${data.error}`);
 			}
 		} catch (e) {
-			console.error('Failed to update config:', e);
+			console.error(t.logConfigUpdateFailed, e);
 		}
 	};
 
@@ -290,7 +263,7 @@ export default function App() {
 		try {
 			await fetch('/api/webrtc/clear-completed', { method: 'POST' });
 		} catch (e) {
-			console.error("Failed to clear completed state on server:", e);
+			console.error(t.logClearCompletedFailed, e);
 		}
 	};
 
@@ -380,12 +353,12 @@ export default function App() {
 							<span className={`${styles.statusBadge} ${styles[connState]}`}>
 								{connState === 'connected' ? t.statusConnected : connState === 'connecting' ? t.statusConnecting : t.statusDisconnected}
 							</span>
-							<span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+							<span style={{ fontSize: '11px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
 								({t.statusTitle}: {fsmState})
 							</span>
 						</div>
 
-						{/* 役割表示の追加 */}
+						{/* 役割表示 */}
 						{connState === 'connected' && (
 							<div className={styles.roleDisplay}>
 								<span><BudouText text={t.roleLabel} enabled={lang === 'ja'} />:</span>
@@ -565,7 +538,9 @@ export default function App() {
 									</span>
 									<ul style={{ paddingLeft: '20px', margin: '8px 0', fontSize: '13px', lineHeight: 1.5 }}>
 										{selectedFiles.map((f, i) => (
-											<li key={i}>{f.split('\\').pop()?.split('/').pop()}</li>
+											<li key={i} style={{ wordBreak: 'break-all' }}>
+												{f.split('\\').pop()?.split('/').pop()}
+											</li>
 										))}
 									</ul>
 								</div>
@@ -657,143 +632,41 @@ export default function App() {
 
 			{/* 設定モーダル */}
 			{showSettings && (
-				<div className={styles.modalOverlay} onClick={() => setShowSettings(false)}>
-					<div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-						<div className={styles.modalHeader}>
-							<h3 className={styles.modalTitle}>
-								<Settings size={18} />
-								<span>
-									<BudouText text={t.settingsTitle} enabled={lang === 'ja'} />
-								</span>
-							</h3>
-							<button className={styles.modalClose} onClick={() => setShowSettings(false)}>
-								<X size={20} />
-							</button>
-						</div>
-						<div className={styles.settingsGroup}>
-							<div className={styles.settingsRow}>
-								<span>
-									<BudouText text={t.selectLang} enabled={lang === 'ja'} />
-								</span>
-								<select 
-									className={styles.select} 
-									value={lang} 
-									onChange={(e) => {
-										const nextLang = e.target.value;
-										setLang(nextLang);
-										updateConfig(undefined, nextLang);
-									}}
-								>
-									{Object.keys(locales).map((key) => (
-										<option key={key} value={key}>
-											{key === 'ja' ? '日本語 (Japanese)' : key === 'en' ? 'English (US)' : key.toUpperCase()}
-										</option>
-									))}
-								</select>
-							</div>
-							<div className={styles.settingsRow}>
-								<span>
-									<BudouText text={t.selectTheme} enabled={lang === 'ja'} />
-								</span>
-								<div style={{ display: 'flex', gap: '8px' }}>
-									<button 
-										className={`${styles.iconBtn} ${theme === 'light' ? styles.active : ''}`}
-										style={{ borderColor: theme === 'light' ? 'var(--accent)' : 'var(--border)' }}
-										onClick={() => {
-											setTheme('light');
-											updateConfig('light', undefined);
-										}}
-									>
-										<Sun size={16} />
-									</button>
-									<button 
-										className={`${styles.iconBtn} ${theme === 'dark' ? styles.active : ''}`}
-										style={{ borderColor: theme === 'dark' ? 'var(--accent)' : 'var(--border)' }}
-										onClick={() => {
-											setTheme('dark');
-											updateConfig('dark', undefined);
-										}}
-									>
-										<Moon size={16} />
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+				<SettingsModal
+					lang={lang}
+					locales={locales}
+					theme={theme}
+					t={t}
+					onClose={() => setShowSettings(false)}
+					onLangChange={(nextLang) => {
+						setLang(nextLang);
+						updateConfig(undefined, nextLang);
+					}}
+					onThemeChange={(nextTheme) => {
+						setTheme(nextTheme);
+						updateConfig(nextTheme, undefined);
+					}}
+				/>
 			)}
 
 			{/* 使い方ガイドモーダル */}
 			{showHelp && (
-				<div className={styles.modalOverlay} onClick={() => setShowHelp(false)}>
-					<div className={styles.modalContent} style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
-						<div className={styles.modalHeader}>
-							<h3 className={styles.modalTitle}>
-								<HelpCircle size={18} />
-								<span>
-									<BudouText text={t.helpTitle} enabled={lang === 'ja'} />
-								</span>
-							</h3>
-							<button className={styles.modalClose} onClick={() => setShowHelp(false)}>
-								<X size={20} />
-							</button>
-						</div>
-						<div>
-							<ol className={styles.helpList}>
-								{t.helpSteps.map((step, idx) => (
-									<li key={idx} className={styles.helpItem}>
-										<BudouText text={step} enabled={lang === 'ja'} />
-									</li>
-								))}
-							</ol>
-						</div>
-					</div>
-				</div>
+				<HelpModal
+					lang={lang}
+					t={t}
+					onClose={() => setShowHelp(false)}
+				/>
 			)}
 
 			{/* 送受信完了モーダル */}
 			{transferComplete && (
-				<div className={styles.modalOverlay} onClick={closeTransferCompleteModal}>
-					<div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-						<div className={styles.modalHeader}>
-							<h3 className={styles.modalTitle}>
-								<Check size={18} color="var(--accent)" />
-								<span>
-									<BudouText 
-										text={transferComplete.role === 'receiver' ? t.downloadCompleteTitle : t.uploadCompleteTitle} 
-										enabled={lang === 'ja'} 
-									/>
-								</span>
-							</h3>
-							<button className={styles.modalClose} onClick={closeTransferCompleteModal}>
-								<X size={20} />
-							</button>
-						</div>
-						<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center', padding: '10px 0' }}>
-							<p style={{ fontSize: '14px', margin: 0, lineHeight: 1.5 }}>
-								<BudouText 
-									text={transferComplete.role === 'receiver' ? t.downloadCompleteMsg : t.uploadCompleteMsg} 
-									enabled={lang === 'ja'} 
-								/>
-							</p>
-							<div style={{ 
-								width: '100%', 
-								padding: '12px', 
-								backgroundColor: 'rgba(0, 0, 0, 0.05)', 
-								borderRadius: 'var(--radius-input)',
-								fontSize: '13px',
-								fontWeight: 600,
-								wordBreak: 'break-all',
-								fontFamily: 'monospace'
-							}}>
-								{transferComplete.fileName}
-							</div>
-							<button className={styles.button} style={{ width: 'auto', padding: '10px 32px', marginTop: '8px' }} onClick={closeTransferCompleteModal}>
-								{t.btnOk}
-							</button>
-						</div>
-					</div>
-				</div>
+				<TransferCompleteModal
+					lang={lang}
+					t={t}
+					fileName={transferComplete.fileName}
+					role={transferComplete.role}
+					onClose={closeTransferCompleteModal}
+				/>
 			)}
 		</div>
 	);

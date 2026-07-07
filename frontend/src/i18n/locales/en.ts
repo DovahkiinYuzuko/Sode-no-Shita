@@ -2,6 +2,7 @@ import type { Translation } from '../types';
 
 const en: Translation = {
 	title: "Sode no Shita File",
+	langDisplayName: "English (US)",
 	themeLight: "Light Mode",
 	themeDark: "Dark Mode",
 	p2pEstablish: "1. Establish P2P Connection",
@@ -72,7 +73,14 @@ const en: Translation = {
 	downloadCompleteMsg: "File download has completed successfully.",
 	uploadCompleteTitle: "Upload Complete",
 	uploadCompleteMsg: "File upload has completed successfully.",
-	btnOk: "OK"
+	btnOk: "OK",
+
+	// Console log keys (developer-facing internal logs)
+	logTransferComplete: "[Transfer Complete Detected]",
+	logSseParseError: "SSE JSON parse error:",
+	logSseError: "SSE Error:",
+	logConfigUpdateFailed: "Failed to update config:",
+	logClearCompletedFailed: "Failed to clear completed state on server:",
 };
 
 export default en;

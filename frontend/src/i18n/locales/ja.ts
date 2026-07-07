@@ -2,6 +2,7 @@ import type { Translation } from '../types';
 
 const ja: Translation = {
 	title: "袖の下のファイル",
+	langDisplayName: "日本語 (Japanese)",
 	themeLight: "ライトモード",
 	themeDark: "ダークモード",
 	p2pEstablish: "1. P2P接続の確立",
@@ -72,7 +73,14 @@ const ja: Translation = {
 	downloadCompleteMsg: "ファイルのダウンロードが完了しました。",
 	uploadCompleteTitle: "送信完了",
 	uploadCompleteMsg: "ファイルの送信が完了しました。",
-	btnOk: "了解"
+	btnOk: "了解",
+
+	// コンソールログ用キー（開発者向け内部ログ）
+	logTransferComplete: "[転送完了を検知]",
+	logSseParseError: "SSE JSONパースエラー:",
+	logSseError: "SSEエラー:",
+	logConfigUpdateFailed: "設定の更新に失敗しました:",
+	logClearCompletedFailed: "サーバー側の完了状態のクリアに失敗しました:",
 };
 
 export default ja;

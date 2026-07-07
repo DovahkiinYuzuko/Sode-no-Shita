@@ -1,5 +1,6 @@
 export interface Translation {
 	title: string;
+	langDisplayName: string;
 	themeLight: string;
 	themeDark: string;
 	p2pEstablish: string;
@@ -65,4 +66,12 @@ export interface Translation {
 	uploadCompleteTitle: string;
 	uploadCompleteMsg: string;
 	btnOk: string;
+
+	// コンソールログ用キー（開発者向け内部ログ）
+	logTransferComplete: string;
+	logSseParseError: string;
+	logSseError: string;
+	logConfigUpdateFailed: string;
+	logClearCompletedFailed: string;
 }
+

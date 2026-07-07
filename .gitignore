@@ -3,8 +3,6 @@
 !.gitignore
 # ---AUTO-Generated---
 # .gitignores/backend.gitignore
-!go.mod
-!go.sum
 !backend/
 !backend/**
 # .gitignores/docs.gitignore
@@ -20,8 +18,15 @@
 !frontend/src/
 !frontend/src/**
 !frontend/package.json
+!frontend/package-lock.json
+!frontend/tsconfig.app.json
+!frontend/tsconfig.node.json
 !frontend/tsconfig.json
 !frontend/vite.config.ts
+!frontend/index.html
+!.oxlintrc.json
 # .gitignores/袖の下のファイル.gitignore
 !main.go
+!go.mod
+!go.sum
 !README.md

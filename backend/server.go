@@ -6,6 +6,9 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -14,6 +17,46 @@ func writeJSONError(w http.ResponseWriter, status int, errMsg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(map[string]string{"error": errMsg})
+}
+
+var activeSSEClients int32
+var shutdownTimer *time.Timer
+var shutdownMu sync.Mutex
+
+func checkShutdown() {
+	shutdownMu.Lock()
+	defer shutdownMu.Unlock()
+
+	if atomic.LoadInt32(&activeSSEClients) > 0 {
+		if shutdownTimer != nil {
+			shutdownTimer.Stop()
+			shutdownTimer = nil
+		}
+		return
+	}
+
+	if shutdownTimer == nil {
+		log.Println("[Server] No active clients connected. Initiating 5-second shutdown countdown...")
+		shutdownTimer = time.AfterFunc(5*time.Second, func() {
+			shutdownMu.Lock()
+			defer shutdownMu.Unlock()
+			if atomic.LoadInt32(&activeSSEClients) == 0 {
+				log.Println("[Server] Shutdown countdown finished. Exiting process...")
+				os.Exit(0)
+			}
+		})
+	}
+}
+
+func cancelShutdown() {
+	shutdownMu.Lock()
+	defer shutdownMu.Unlock()
+
+	if shutdownTimer != nil {
+		log.Println("[Server] Client reconnected. Cancelling shutdown countdown.")
+		shutdownTimer.Stop()
+		shutdownTimer = nil
+	}
 }
 
 func StartWebServer(port int, frontendFS fs.FS) error {
@@ -303,6 +346,16 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 			http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
 			return
 		}
+
+		// クライアント数追加
+		atomic.AddInt32(&activeSSEClients, 1)
+		cancelShutdown()
+
+		defer func() {
+			// クライアント数減少
+			atomic.AddInt32(&activeSSEClients, -1)
+			checkShutdown()
+		}()
 
 		ticker := time.NewTicker(500 * time.Millisecond)
 		defer ticker.Stop()

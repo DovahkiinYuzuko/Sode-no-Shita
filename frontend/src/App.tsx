@@ -11,6 +11,7 @@ type int64 = number;
 export default function App() {
 	const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 	const [connState, setConnState] = useState<string>('disconnected');
+	const [fsmState, setFsmState] = useState<string>('IDLE');
 	const [role, setRole] = useState<string>('sender');
 	const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
 	const [remoteFiles, setRemoteFiles] = useState<FileInfo[]>([]);
@@ -41,6 +42,7 @@ export default function App() {
 			try {
 				const state = JSON.parse(event.data);
 				setConnState(state.connState);
+				setFsmState(state.fsmState || 'IDLE');
 				setRole(state.role);
 				setSelectedFiles(state.selectedFiles || []);
 				setRemoteFiles(state.remoteFiles || []);
@@ -187,6 +189,24 @@ export default function App() {
 		}
 	};
 
+	// FSMのリセット
+	const resetFSM = async () => {
+		try {
+			const res = await fetch('/api/webrtc/reset', { method: 'POST' });
+			const data = await res.json();
+			if (data.error) {
+				setAlertMsg(`エラー: ${data.error}`);
+			} else {
+				setGeneratedCode('');
+				setInputCode('');
+				setAnswerCode('');
+				setAlertMsg('接続をリセットしました');
+			}
+		} catch (e) {
+			setAlertMsg('リセットに失敗しました');
+		}
+	};
+
 	const formatSize = (bytes: number) => {
 		if (bytes === 0) return '0 B';
 		const k = 1024;
@@ -231,9 +251,12 @@ export default function App() {
 							<span className={`${styles.statusBadge} ${styles[connState]}`}>
 								{connState === 'connected' ? '接続完了' : connState === 'connecting' ? '接続中...' : '未接続'}
 							</span>
+							<span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '10px' }}>
+								状態: {fsmState}
+							</span>
 						</div>
 
-						{connState === 'disconnected' && (
+						{fsmState === 'IDLE' && (
 							<>
 								<div className={styles.formGroup}>
 									<button className={styles.button} onClick={createOffer}>
@@ -241,6 +264,38 @@ export default function App() {
 									</button>
 								</div>
 
+								<div className={styles.formGroup}>
+									<span className={styles.label}>対向から受け取ったコードを入力</span>
+									<textarea 
+										className={styles.textarea} 
+										placeholder="ここに接続コードを入力してください"
+										value={inputCode}
+										onChange={(e) => setInputCode(e.target.value)}
+									/>
+								</div>
+
+								<div className={styles.formGroup} style={{ display: 'flex', gap: '10px' }}>
+									<button className={`${styles.button} ${styles.buttonSecondary}`} onClick={acceptOffer}>
+										コードAを解析してコードBを生成 (接続側)
+									</button>
+								</div>
+							</>
+						)}
+
+						{fsmState === 'GENERATING_OFFER' && (
+							<div className={styles.formGroup} style={{ textAlign: 'center', padding: '20px 0' }}>
+								<span className={styles.label}>接続コードA（Offer）を生成中...（最大3秒）</span>
+							</div>
+						)}
+
+						{fsmState === 'GENERATING_ANSWER' && (
+							<div className={styles.formGroup} style={{ textAlign: 'center', padding: '20px 0' }}>
+								<span className={styles.label}>接続コードB（Answer）を生成中...（最大3秒）</span>
+							</div>
+						)}
+
+						{fsmState === 'WAITING_FOR_ANSWER' && (
+							<>
 								{generatedCode && (
 									<div className={styles.formGroup}>
 										<span className={styles.label}>生成された接続コードA (コピーして相手に共有)</span>
@@ -257,24 +312,28 @@ export default function App() {
 								)}
 
 								<div className={styles.formGroup}>
-									<span className={styles.label}>対向から受け取ったコードを入力</span>
+									<span className={styles.label}>相手からの接続コードBを入力</span>
 									<textarea 
 										className={styles.textarea} 
-										placeholder="ここに接続コードを入力してください"
+										placeholder="ここに接続コードBを入力してください"
 										value={inputCode}
 										onChange={(e) => setInputCode(e.target.value)}
 									/>
 								</div>
 
-								<div className={styles.formGroup} style={{ display: 'flex', gap: '10px' }}>
-									<button className={`${styles.button} ${styles.buttonSecondary}`} onClick={acceptOffer}>
-										コードAを解析してコードBを生成 (接続側)
-									</button>
+								<div className={styles.formGroup}>
 									<button className={styles.button} onClick={connectAnswer}>
-										コードBを入力して接続確立 (待機側)
+										コードBを入力して接続確立
 									</button>
 								</div>
+							</>
+						)}
 
+						{fsmState === 'CONNECTING' && (
+							<>
+								<div className={styles.formGroup} style={{ textAlign: 'center', padding: '20px 0' }}>
+									<span className={styles.label}>接続中... P2P接続の確立を待っています...</span>
+								</div>
 								{answerCode && (
 									<div className={styles.formGroup}>
 										<span className={styles.label}>生成された接続コードB (待機側に送り返す)</span>
@@ -290,6 +349,15 @@ export default function App() {
 									</div>
 								)}
 							</>
+						)}
+
+						{fsmState === 'FAILED' && (
+							<div className={styles.formGroup} style={{ textAlign: 'center', padding: '20px 0' }}>
+								<span className={styles.label} style={{ color: 'var(--accent)', fontWeight: 'bold' }}>接続に失敗しました</span>
+								<button className={`${styles.button} ${styles.buttonSecondary}`} style={{ marginTop: '15px' }} onClick={resetFSM}>
+									接続をリセットして初期状態に戻す
+								</button>
+							</div>
 						)}
 					</div>
 

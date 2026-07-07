@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"log"
 	"net/http"
 	"time"
 )
@@ -67,11 +68,14 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 			writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
 			return
 		}
+		log.Println("[API] /api/webrtc/offer requested")
 		code, err := InitWebRTCPeer(true)
 		if err != nil {
+			log.Printf("[API] /api/webrtc/offer error: %v\n", err)
 			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		log.Println("[API] /api/webrtc/offer completed successfully")
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]string{"code": code})
 	})
@@ -81,11 +85,13 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 			writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
 			return
 		}
+		log.Println("[API] /api/webrtc/answer requested")
 		var req struct {
 			Code string `json:"code"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil || req.Code == "" {
+			log.Println("[API] /api/webrtc/answer error: invalid code")
 			writeJSONError(w, http.StatusBadRequest, "Invalid code")
 			return
 		}
@@ -93,6 +99,7 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 		// 受信側の接続準備
 		_, err = InitWebRTCPeer(false)
 		if err != nil {
+			log.Printf("[API] /api/webrtc/answer initialization error: %v\n", err)
 			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
@@ -100,10 +107,12 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 		// Answerを生成
 		answerCode, err := AcceptOfferAndCreateAnswer(req.Code)
 		if err != nil {
+			log.Printf("[API] /api/webrtc/answer accept/create error: %v\n", err)
 			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
+		log.Println("[API] /api/webrtc/answer completed successfully")
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]string{"code": answerCode})
 	})
@@ -113,23 +122,59 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 			writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
 			return
 		}
+		log.Println("[API] /api/webrtc/connect requested")
 		var req struct {
 			Code string `json:"code"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil || req.Code == "" {
+			log.Println("[API] /api/webrtc/connect error: invalid code")
 			writeJSONError(w, http.StatusBadRequest, "Invalid code")
 			return
 		}
 
 		err = ConnectAnswer(req.Code)
 		if err != nil {
+			log.Printf("[API] /api/webrtc/connect error: %v\n", err)
 			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
+		log.Println("[API] /api/webrtc/connect completed successfully")
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]string{"status": "connected"})
+	})
+
+	mux.HandleFunc("/api/webrtc/reset", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+			return
+		}
+		log.Println("[API] /api/webrtc/reset requested")
+		
+		GlobalState.Lock()
+		if peerConnection != nil {
+			_ = peerConnection.Close()
+			peerConnection = nil
+		}
+		if dataChannel != nil {
+			_ = dataChannel.Close()
+			dataChannel = nil
+		}
+		GlobalState.Role = ""
+		GlobalState.RemoteFiles = []FileInfo{}
+		GlobalState.IsTransferring = false
+		GlobalState.Unlock()
+
+		if err := TransitionTo(StateIdle); err != nil {
+			log.Printf("[API] /api/webrtc/reset error: %v\n", err)
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		
+		log.Println("[API] /api/webrtc/reset completed, state is IDLE")
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "reset"})
 	})
 
 	// ダウンロード要求 API (個別)

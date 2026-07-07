@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,6 +34,7 @@ type Message struct {
 type State struct {
 	sync.Mutex
 	ConnState      string     `json:"connState"` // "disconnected", "connecting", "connected"
+	FSMState       FSMState   `json:"fsmState"`
 	Role           string     `json:"role"`      // "sender", "receiver"
 	SelectedFiles  []string   `json:"selectedFiles"`
 	RemoteFiles    []FileInfo `json:"remoteFiles"`
@@ -47,6 +49,7 @@ type State struct {
 
 var GlobalState = &State{
 	ConnState:     "disconnected",
+	FSMState:      StateIdle,
 	SelectedFiles: []string{},
 	RemoteFiles:   []FileInfo{},
 }
@@ -81,9 +84,15 @@ func init() {
 }
 
 func InitWebRTCPeer(isOffer bool) (string, error) {
-	GlobalState.Lock()
-	GlobalState.ConnState = "connecting"
-	GlobalState.Unlock()
+	if isOffer {
+		if err := TransitionTo(StateGeneratingOffer); err != nil {
+			return "", err
+		}
+	} else {
+		if err := TransitionTo(StateGeneratingAnswer); err != nil {
+			return "", err
+		}
+	}
 
 	config := webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
@@ -96,18 +105,29 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 	var err error
 	peerConnection, err = api.NewPeerConnection(config)
 	if err != nil {
+		_ = TransitionTo(StateFailed)
 		return "", err
 	}
 
 	peerConnection.OnConnectionStateChange(func(s webrtc.PeerConnectionState) {
-		GlobalState.Lock()
-		defer GlobalState.Unlock()
 		switch s {
 		case webrtc.PeerConnectionStateConnected:
-			GlobalState.ConnState = "connected"
+			_ = TransitionTo(StateConnected)
 		case webrtc.PeerConnectionStateDisconnected, webrtc.PeerConnectionStateFailed, webrtc.PeerConnectionStateClosed:
-			GlobalState.ConnState = "disconnected"
+			_ = TransitionTo(StateFailed)
+			GlobalState.Lock()
 			GlobalState.IsTransferring = false
+			GlobalState.Unlock()
+		}
+	})
+
+	peerConnection.OnICEGatheringStateChange(func(state webrtc.ICEGatheringState) {
+		log.Printf("[WebRTC] ICE Gathering State changed: %s\n", state.String())
+	})
+
+	peerConnection.OnICECandidate(func(c *webrtc.ICECandidate) {
+		if c != nil {
+			log.Printf("[WebRTC] Gathered Candidate: %s (Type: %s)\n", c.String(), c.Typ.String())
 		}
 	})
 
@@ -142,13 +162,15 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 		gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 		select {
 		case <-gatherComplete:
-			// 収集完了
+			log.Println("[WebRTC] ICE candidate gathering complete")
 		case <-time.After(3 * time.Second):
-			// タイムアウト時はその時点で集まったCandidateで続行
-			fmt.Println("ICE gathering timed out, proceeding with gathered candidates")
+			log.Println("[WebRTC] ICE candidate gathering timed out, proceeding with gathered candidates")
 		}
 
 		localDesc := peerConnection.LocalDescription()
+		if err := TransitionTo(StateWaitingForAnswer); err != nil {
+			return "", err
+		}
 		return CompressSDP(localDesc.SDP)
 	}
 
@@ -166,8 +188,13 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 }
 
 func ConnectAnswer(answerCode string) error {
+	if err := TransitionTo(StateConnecting); err != nil {
+		return err
+	}
+
 	sdp, err := DecompressSDP(answerCode)
 	if err != nil {
+		_ = TransitionTo(StateFailed)
 		return err
 	}
 
@@ -209,13 +236,15 @@ func AcceptOfferAndCreateAnswer(offerCode string) (string, error) {
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 	select {
 	case <-gatherComplete:
-		// 収集完了
+		log.Println("[WebRTC] ICE candidate gathering complete (answer)")
 	case <-time.After(3 * time.Second):
-		// タイムアウト時はその時点で集まったCandidateで続行
-		fmt.Println("ICE gathering timed out (answer), proceeding with gathered candidates")
+		log.Println("[WebRTC] ICE candidate gathering timed out (answer), proceeding with gathered candidates")
 	}
 
 	localDesc := peerConnection.LocalDescription()
+	if err := TransitionTo(StateConnecting); err != nil {
+		return "", err
+	}
 	return CompressSDP(localDesc.SDP)
 }
 

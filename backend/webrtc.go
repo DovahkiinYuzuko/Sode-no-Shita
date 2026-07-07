@@ -42,7 +42,6 @@ type State struct {
 	SaveDir        string     `json:"saveDir"`
 	TransferFile   string     `json:"transferFile"`
 	CompletedFile     string     `json:"completedFile"`
-	TransferEventSeq  int        `json:"transferEventSeq"` // 転送完了のたびにインクリメント（同名ファイル連続転送対策）
 	BytesSent         int64      `json:"bytesSent"`
 	BytesReceived     int64      `json:"bytesReceived"`
 	TotalBytes        int64      `json:"totalBytes"`
@@ -327,6 +326,7 @@ func setupDataChannel(d *webrtc.DataChannel) {
 
 		case "start":
 			// 受信側がファイル転送開始通知を受け取る
+			log.Printf("[WebRTC] Received 'start' message. Name: %s, Size: %d\n", m.Name, m.Size)
 			GlobalState.Lock()
 			saveDir := GlobalState.SaveDir
 			GlobalState.IsTransferring = true
@@ -361,14 +361,17 @@ func setupDataChannel(d *webrtc.DataChannel) {
 
 		case "end":
 			// 受信側がファイル転送終了通知を受け取る
+			log.Printf("[WebRTC] Received 'end' message. CompletedFile (will be): %s\n", GlobalState.TransferFile)
 			if currentFile != nil {
+				log.Println("[WebRTC] Closing file...")
 				_ = currentFile.Close()
 				currentFile = nil
 			}
 			GlobalState.Lock()
 			GlobalState.CompletedFile = GlobalState.TransferFile
-			GlobalState.TransferEventSeq++ // 完了イベントのシーケンス番号をインクリメント
 			GlobalState.IsTransferring = false
+			log.Printf("[WebRTC] GlobalState updated on end. CompletedFile: %s, IsTransferring: %t\n",
+				GlobalState.CompletedFile, GlobalState.IsTransferring)
 			GlobalState.Unlock()
 
 		case "error":
@@ -481,6 +484,7 @@ func handleFileSendRequest(fileName string) error {
 		return err
 	}
 
+	log.Printf("[WebRTC] Starting file send: %s (Size: %d)\n", fileName, stat.Size())
 	GlobalState.Lock()
 	GlobalState.IsTransferring = true
 	GlobalState.TransferFile = fileName
@@ -511,11 +515,13 @@ func handleFileSendRequest(fileName string) error {
 		Type: "end",
 	}
 	bEnd, _ := json.Marshal(endMsg)
+	log.Println("[WebRTC] Sending 'end' message to receiver...")
 	_ = dataChannel.SendText(string(bEnd))
 
 	GlobalState.Lock()
 	GlobalState.CompletedFile = fileName
 	GlobalState.IsTransferring = false
+	log.Printf("[WebRTC] Sender state updated. CompletedFile: %s, IsTransferring: %t\n", fileName, GlobalState.IsTransferring)
 	GlobalState.Unlock()
 
 	return nil
@@ -542,6 +548,7 @@ func handleZipSendRequest() error {
 		}
 	}
 
+	log.Printf("[WebRTC] Starting zip archive send. Estimated size: %d\n", totalSize)
 	GlobalState.Lock()
 	GlobalState.IsTransferring = true
 	GlobalState.TransferFile = "archive.zip"
@@ -605,11 +612,13 @@ func handleZipSendRequest() error {
 		Type: "end",
 	}
 	bEnd, _ := json.Marshal(endMsg)
+	log.Println("[WebRTC] Sending 'end' message for zip archive to receiver...")
 	_ = dataChannel.SendText(string(bEnd))
 
 	GlobalState.Lock()
 	GlobalState.CompletedFile = "archive.zip"
 	GlobalState.IsTransferring = false
+	log.Printf("[WebRTC] Sender zip state updated. CompletedFile: archive.zip, IsTransferring: %t\n", GlobalState.IsTransferring)
 	GlobalState.Unlock()
 
 	return nil

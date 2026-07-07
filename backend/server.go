@@ -340,6 +340,19 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 		_ = json.NewEncoder(w).Encode(map[string]string{"status": "request_all_sent"})
 	})
 
+	// 転送完了状態クリア API
+	mux.HandleFunc("/api/webrtc/clear-completed", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+			return
+		}
+		GlobalState.Lock()
+		GlobalState.CompletedFile = ""
+		GlobalState.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "cleared"})
+	})
+
 	// 3. SSEによるリアルタイムステータス進捗配信 API
 	mux.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/event-stream")

@@ -78,10 +78,8 @@ export default function App() {
 	// 言語用辞書（見つからない場合はデフォルトの英語フォールバック）
 	const t = locales[lang] || locales[defaultLang] || locales.en;
 
-	// GoのSSEステータス監視
 	useEffect(() => {
 		const eventSource = new EventSource('/api/status');
-		let prevEventSeq = 0;
 
 		eventSource.onmessage = (event) => {
 			try {
@@ -93,13 +91,20 @@ export default function App() {
 				const nextTotalBytes = state.totalBytes || 0;
 				const nextTransferFile = state.transferFile || '';
 				const nextCompletedFile = state.completedFile || '';
-				const nextEventSeq = state.transferEventSeq ?? 0;
-
-				// 送受信完了検知（シーケンス番号比較—同名ファイル連続転送・ SSEレース対策）
-				if (nextCompletedFile && nextEventSeq !== prevEventSeq) {
-					setTransferComplete({
+				// 送受信完了検知
+				if (nextCompletedFile) {
+					console.warn("[Transfer Complete Detected]", {
 						fileName: nextCompletedFile,
 						role: nextRole
+					});
+					setTransferComplete(prev => {
+						if (prev && prev.fileName === nextCompletedFile && prev.role === nextRole) {
+							return prev;
+						}
+						return {
+							fileName: nextCompletedFile,
+							role: nextRole
+						};
 					});
 				}
 
@@ -115,8 +120,6 @@ export default function App() {
 				setTotalBytes(nextTotalBytes);
 				setSpeed(state.speed || 0);
 				setIsTransferring(nextIsTransferring);
-
-				prevEventSeq = nextEventSeq;
 
 				// 設定の同期
 				if (state.config) {
@@ -278,6 +281,16 @@ export default function App() {
 			}
 		} catch (e) {
 			setAlertMsg(t.errBatchDownload);
+		}
+	};
+
+	// 転送完了モーダルを閉じる ＆ サーバー側の状態をクリアする
+	const closeTransferCompleteModal = async () => {
+		setTransferComplete(null);
+		try {
+			await fetch('/api/webrtc/clear-completed', { method: 'POST' });
+		} catch (e) {
+			console.error("Failed to clear completed state on server:", e);
 		}
 	};
 
@@ -740,7 +753,7 @@ export default function App() {
 
 			{/* 送受信完了モーダル */}
 			{transferComplete && (
-				<div className={styles.modalOverlay} onClick={() => setTransferComplete(null)}>
+				<div className={styles.modalOverlay} onClick={closeTransferCompleteModal}>
 					<div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
 						<div className={styles.modalHeader}>
 							<h3 className={styles.modalTitle}>
@@ -752,7 +765,7 @@ export default function App() {
 									/>
 								</span>
 							</h3>
-							<button className={styles.modalClose} onClick={() => setTransferComplete(null)}>
+							<button className={styles.modalClose} onClick={closeTransferCompleteModal}>
 								<X size={20} />
 							</button>
 						</div>
@@ -775,7 +788,7 @@ export default function App() {
 							}}>
 								{transferComplete.fileName}
 							</div>
-							<button className={styles.button} style={{ width: 'auto', padding: '10px 32px', marginTop: '8px' }} onClick={() => setTransferComplete(null)}>
+							<button className={styles.button} style={{ width: 'auto', padding: '10px 32px', marginTop: '8px' }} onClick={closeTransferCompleteModal}>
 								{t.btnOk}
 							</button>
 						</div>

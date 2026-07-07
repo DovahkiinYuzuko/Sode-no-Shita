@@ -62,7 +62,12 @@ const ja: Translation = {
 	connectSuccessMsg: "接続を登録しました。P2P接続完了を待っています...",
 	resetSuccessMsg: "接続をリセットしました。",
 	connectionFailedUI: "接続に失敗しました。タイムアウトまたは切断されました。",
-	downloadLabel: "ダウンロード"
+	downloadLabel: "ダウンロード",
+	
+	roleLabel: "あなたの役割",
+	roleSender: "送信側 (ファイルを共有する側)",
+	roleReceiver: "受信側 (ファイルをダウンロードする側)",
+	roleUnknown: "未設定 (接続後に自動で決まるよ)"
 };
 
 export default ja;

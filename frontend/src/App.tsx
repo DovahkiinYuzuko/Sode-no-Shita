@@ -343,6 +343,16 @@ export default function App() {
 							</span>
 						</div>
 
+						{/* 役割表示の追加 */}
+						{connState === 'connected' && (
+							<div className={styles.roleDisplay}>
+								<span><BudouText text={t.roleLabel} enabled={lang === 'ja'} />:</span>
+								<span className={styles.roleHighlight}>
+									<BudouText text={role === 'sender' ? t.roleSender : t.roleReceiver} enabled={lang === 'ja'} />
+								</span>
+							</div>
+						)}
+
 						{/* 初期状態 (IDLE) */}
 						{fsmState === 'IDLE' && (
 							<>
@@ -494,7 +504,7 @@ export default function App() {
 						</h2>
 
 						{/* 送信側の設定 */}
-						<div className={styles.panel} style={{ marginBottom: '16px', padding: '16px', background: 'rgba(0,0,0,0.02)' }}>
+						<div className={`${styles.panel} ${connState === 'connected' ? (role === 'sender' ? styles.activePanel : styles.inactivePanel) : ''}`} style={{ marginBottom: '16px', padding: '16px', background: 'rgba(0,0,0,0.02)' }}>
 							<h3 style={{ margin: '0 0 12px 0', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
 								<Upload size={16} color="var(--accent)" />
 								<span>
@@ -521,7 +531,7 @@ export default function App() {
 						</div>
 
 						{/* 受信側の設定 */}
-						<div className={styles.panel} style={{ padding: '16px', background: 'rgba(0,0,0,0.02)' }}>
+						<div className={`${styles.panel} ${connState === 'connected' ? (role === 'receiver' ? styles.activePanel : styles.inactivePanel) : ''}`} style={{ padding: '16px', background: 'rgba(0,0,0,0.02)' }}>
 							<h3 style={{ margin: '0 0 12px 0', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
 								<Download size={16} color="var(--accent)" />
 								<span>

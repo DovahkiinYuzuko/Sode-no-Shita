@@ -198,6 +198,7 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .connected {
@@ -487,3 +488,37 @@
   gap: 12px;
 }
 
+/* 役割ごとのアクティブ・非アクティブパネル表示 */
+.activePanel {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.25) !important;
+}
+
+.inactivePanel {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(30%);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.roleDisplay {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 6px 12px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-input);
+  width: fit-content;
+}
+
+.app[data-theme='dark'] .roleDisplay {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.roleHighlight {
+  font-weight: 700;
+  color: var(--accent);
+}

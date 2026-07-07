@@ -55,4 +55,9 @@ export interface Translation {
 	resetSuccessMsg: string;
 	connectionFailedUI: string;
 	downloadLabel: string;
+	
+	roleLabel: string;
+	roleSender: string;
+	roleReceiver: string;
+	roleUnknown: string;
 }

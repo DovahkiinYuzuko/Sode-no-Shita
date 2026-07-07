@@ -62,7 +62,12 @@ const en: Translation = {
 	connectSuccessMsg: "Registered connection. Waiting for P2P completion...",
 	resetSuccessMsg: "Connection reset successfully.",
 	connectionFailedUI: "Connection failed. Timed out or disconnected.",
-	downloadLabel: "Download"
+	downloadLabel: "Download",
+	
+	roleLabel: "Your Role",
+	roleSender: "Sender (Share Files)",
+	roleReceiver: "Receiver (Download Files)",
+	roleUnknown: "Undecided (Determined after connection)"
 };
 
 export default en;

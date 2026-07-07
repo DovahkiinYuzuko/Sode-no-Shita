@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            ext: .exe
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            ext: ""
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            ext: ""
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            ext: ""
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Build Backend
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          go build -ldflags="-s -w" -o sode-no-shita-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} main.go
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sode-no-shita-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}

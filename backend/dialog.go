@@ -1,10 +1,16 @@
 package backend
 
 import (
+	"os"
+	"strings"
+
 	"github.com/ncruces/zenity"
 )
 
 func SelectLocalFiles() ([]string, error) {
+	if testFiles := os.Getenv("SODENOSHITA_TEST_FILES"); testFiles != "" {
+		return strings.Split(testFiles, ","), nil
+	}
 	paths, err := zenity.SelectFileMultiple(
 		zenity.Title("送信するファイルを選択してください（複数選択可）"),
 	)
@@ -18,6 +24,9 @@ func SelectLocalFiles() ([]string, error) {
 }
 
 func SelectLocalDirectory() (string, error) {
+	if testDir := os.Getenv("SODENOSHITA_TEST_SAVEDIR"); testDir != "" {
+		return testDir, nil
+	}
 	path, err := zenity.SelectFile(
 		zenity.Title("受信ファイルの保存先フォルダを選択してください"),
 		zenity.Directory(),

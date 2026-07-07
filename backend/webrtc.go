@@ -127,9 +127,13 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 			return "", err
 		}
 
-		// Gather Completeを待つ
+		// Gather Completeを待つ（最大3秒のタイムアウト付き）
 		gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
-		<-gatherComplete
+		select {
+		case <-gatherComplete:
+		case <-time.After(3 * time.Second):
+			fmt.Println("ICE gathering timed out (Offer), proceeding with current candidates")
+		}
 
 		localDesc := peerConnection.LocalDescription()
 		return CompressSDP(localDesc.SDP)
@@ -188,9 +192,13 @@ func AcceptOfferAndCreateAnswer(offerCode string) (string, error) {
 		return "", err
 	}
 
-	// Gather Completeを待つ
+	// Gather Completeを待つ（最大3秒のタイムアウト付き）
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
-	<-gatherComplete
+	select {
+	case <-gatherComplete:
+	case <-time.After(3 * time.Second):
+		fmt.Println("ICE gathering timed out (Answer), proceeding with current candidates")
+	}
 
 	localDesc := peerConnection.LocalDescription()
 	return CompressSDP(localDesc.SDP)

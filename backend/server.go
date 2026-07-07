@@ -88,6 +88,12 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 		}
 		GlobalState.Unlock()
 
+		// データチャネルがすでに確立されているなら、選択されたファイルリストを直ちに対向に送る
+		if len(paths) > 0 && dataChannel != nil {
+			log.Println("[API] Connection active. Sending selected file list to receiver...")
+			sendInfoList(paths)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{"files": paths})
 	})

@@ -3,6 +3,42 @@
 Describe the purpose of this branch here.
 --- START GIT LOG ---
 
+### `dec8cea`
+- **Date:** 2026-07-08 02:20:32
+- **Commit Message:** [docs] E2Eファイル転送テストの仕様書を追加・更新
+- **Description:** 実際のファイル選択・送受信・完了モーダルの検証を追加したe2e.spec.tsと、モックを用いたtransfer.spec.tsの仕様書を追加。
+- **Constraint:** なし。
+- **Rejected:** なし。
+- **Chosen:** E2Eテストの実コードはgitignoreに従って追跡対象外とし、仕様書のみをコミット。
+
+### `fc21501`
+- **Date:** 2026-07-08 01:42:23
+- **Commit Message:** [feat] frontendのモーダル・改行制御コンポーネント分離および各種仕様書の整備
+- **Description:** frontend/src/App.tsx から各モーダルおよび日本語改行表示（BudouText）をコンポーネントに分離・リファクタリングし、それに合わせたTypeScript仕様書ファイルを新規作成・同期しました。
+- **Constraint:** 新規追加するコンポーネント仕様書は docs/variables'n'functions/ 配下に [TypeScript]ファイル名.md の形式で配置します。また、変数や関数のヘッダには Heading 3 以下のマークダウンを使用します。
+- **Rejected:** モーダルを App.tsx にインラインのまま残すことでコードの見通しが悪くなるため、今後の機能拡張を見据えて分離しました。
+- **Chosen:** frontend/src/components 配下に各モーダルと改行コンポーネントを切り出し、App.tsx はそれらを読み込むだけのシンプルな構成にしました。
+
+### `70be580`
+- **Date:** 2026-07-07 22:07:45
+- **Commit Message:** [cleanup] 自動テスト用ファイルおよび不要な依存関係の削除
+- **Description:** None
+
+### `ce53707`
+- **Date:** 2026-07-07 22:06:25
+- **Commit Message:** [docs] debug-modal-playwright.md をマージ元の独自コミット履歴のみに整理
+- **Description:** None
+
+### `d7cb3f4`
+- **Date:** 2026-07-07 22:05:21
+- **Commit Message:** [docs] main.md の同期更新
+- **Description:** None
+
+### `42b9ed4`
+- **Date:** 2026-07-07 22:05:14
+- **Commit Message:** [docs] debug-modal-playwright.md にマージ前のコミット履歴を同期
+- **Description:** None
+
 ### `755d47f`
 - **Date:** 2026-07-07 22:03:14
 - **Commit Message:** [feat] ボタンのCSSアニメーション追加およびダイアログ制御、Playwright依存関係のコミット

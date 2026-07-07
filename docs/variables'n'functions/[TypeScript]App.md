@@ -1,4 +1,4 @@
-﻿---
+---
 source_file: "frontend/src/App.tsx"
 language: "TypeScript"
 description: "ファイル共有ツールのReact UIメインコンポーネント。テーマ切り替え、シグナリング、ファイルリストの表示、および個別/一括ダウンロードのトリガーを担当。モーダル類はコンポーネントに分離済み。"
@@ -31,6 +31,9 @@ graph TD
 * fsmState ベースで画面を分岐制御する。
 * transferComplete 状態で完了モーダルを制御し、閉じた際に /api/webrtc/clear-completed へPOSTしてGoの状態をクリアする。
 * console.* はすべて t.log* キー経由で多言語化済み。
+* **レイアウト補足**:
+  * ステータス行（接続状態バッジ・FSM状態）は `flex-direction: column` で縦積み表示。横並びによる文字詰まりを解消済み。
+  * コピーグループ (`copyGroup`) はtextareaが全幅を占め、コピーアイコンボタンはtextarea右上に `position: absolute` で重ねて配置。テキストラベルなしのアイコンのみ表示でスペース効率を改善。
 
 ### updateConfig
 * /api/config/update へPOSTしてテーマ・言語設定を永続化する非同期関数。

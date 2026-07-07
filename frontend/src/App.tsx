@@ -346,14 +346,14 @@ export default function App() {
 							<BudouText text={t.p2pEstablish} enabled={lang === 'ja'} />
 						</h2>
 						
-						<div className={styles.formGroup} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+						<div className={styles.formGroup} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }}>
 							<span className={styles.label} style={{ margin: 0 }}>
 								<BudouText text={t.statusLabel} enabled={lang === 'ja'} />:
 							</span>
 							<span className={`${styles.statusBadge} ${styles[connState]}`}>
 								{connState === 'connected' ? t.statusConnected : connState === 'connecting' ? t.statusConnecting : t.statusDisconnected}
 							</span>
-							<span style={{ fontSize: '11px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+							<span style={{ fontSize: '11px', color: 'var(--muted)' }}>
 								({t.statusTitle}: {fsmState})
 							</span>
 						</div>
@@ -431,9 +431,8 @@ export default function App() {
 												readOnly 
 												value={generatedCode} 
 											/>
-											<button className={styles.copyBtn} onClick={() => handleCopy(generatedCode, true)}>
+											<button className={styles.copyBtn} onClick={() => handleCopy(generatedCode, true)} title={t.btnCopy}>
 												{copiedA ? <Check size={16} /> : <Copy size={16} />}
-												<span>{t.btnCopy}</span>
 											</button>
 										</div>
 									</div>
@@ -480,9 +479,8 @@ export default function App() {
 												readOnly 
 												value={answerCode} 
 											/>
-											<button className={styles.copyBtn} onClick={() => handleCopy(answerCode, false)}>
+											<button className={styles.copyBtn} onClick={() => handleCopy(answerCode, false)} title={t.btnCopy}>
 												{copiedB ? <Check size={16} /> : <Copy size={16} />}
-												<span>{t.btnCopy}</span>
 											</button>
 										</div>
 									</div>

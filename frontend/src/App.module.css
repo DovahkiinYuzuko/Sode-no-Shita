@@ -427,36 +427,34 @@
   color: var(--text);
 }
 
-/* 一括コピーボタン領域 */
+/* コピーグループ：textareaを全幅に、コピーアイコンはabsolute配置 */
 .copyGroup {
   position: relative;
-  display: flex;
-  gap: 8px;
-}
-
-.copyGroup textarea {
-  flex: 1;
 }
 
 .copyBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
   display: flex;
   align-items: center;
-  gap: 6px;
   justify-content: center;
   background-color: var(--accent);
   color: #ffffff;
   border: none;
   border-radius: var(--radius-input);
-  padding: 0 16px;
-  font-size: 13px;
-  font-weight: 600;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   cursor: pointer;
-  transition: background-color 0.2s;
-  height: 80px; /* テキストエリアの高さに合わせる */
+  transition: background-color 0.2s, transform 0.15s, opacity 0.2s;
+  opacity: 0.75;
 }
 
 .copyBtn:hover {
   background-color: var(--accent-hover);
+  opacity: 1;
+  transform: scale(1.08);
 }
 
 /* プレミアムヘッダーナビ */

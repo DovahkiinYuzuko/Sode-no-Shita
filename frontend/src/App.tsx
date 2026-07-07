@@ -248,7 +248,7 @@ export default function App() {
 											className={styles.textarea} 
 											readOnly 
 											value={generatedCode} 
-											onClick={(e) => {
+											onClick={() => {
 												navigator.clipboard.writeText(generatedCode);
 												setAlertMsg('接続コードAをクリップボードにコピーしました！');
 											}}
@@ -282,7 +282,7 @@ export default function App() {
 											className={styles.textarea} 
 											readOnly 
 											value={answerCode}
-											onClick={(e) => {
+											onClick={() => {
 												navigator.clipboard.writeText(answerCode);
 												setAlertMsg('接続コードBをクリップボードにコピーしました！');
 											}}

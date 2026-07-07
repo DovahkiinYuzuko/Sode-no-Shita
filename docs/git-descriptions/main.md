@@ -3,6 +3,78 @@
 Describe the purpose of this branch here.
 --- START GIT LOG ---
 
+### `c1e8065`
+- **Date:** 2026-07-07 13:32:51
+- **Commit Message:** [fix] ダウンロード完了モーダルが表示されない不具合を修正
+- **Description:** 受信側のダウンロード完了モーダルが表示されないバグを修正した。
+ファイル名の文字列比較（prevCompletedFile）による差分検知方式を廃止し、
+単調増加カウンタ TransferEventSeq による検知方式に移行した。
+- **Constraint:** SSEポーリング間隔（500ms）内に start→end が完結する場合、
+中間の空文字状態がフロントに届かないレースコンディションが存在する。
+また、同名ファイルを連続受信する場合、文字列比較では差分が生じないため
+モーダルが発火しない構造的欠陥があった。
+- **Rejected:** - タイムスタンプ方式（CompletedAt int64）: Unix ナノ秒だが同一ナノ秒での衝突リスクがわずかに残る
+- prevCompletedFile の初期値 null 化: 初回のみの対症療法であり根本解決にならない
+- **Chosen:** - TransferEventSeq int フィールドを GlobalState に追加
+- case end ハンドラでインクリメント
+- フロントの検知条件を nextEventSeq !== prevEventSeq に変更
+これにより同名ファイル連続受信・レースコンディション両方を同時解消できる
+
+### `a2b941f`
+- **Date:** 2026-07-07 13:20:10
+- **Commit Message:** [fix]わからん
+- **Description:** None
+
+### `024ee28`
+- **Date:** 2026-07-07 12:51:13
+- **Commit Message:** [fix] P2P接続確立後に送信側で新規にファイルを選択した際、即座に受信側へファイルリストが同期されない不具合の修正
+- **Description:** None
+
+### `5f1c5da`
+- **Date:** 2026-07-07 12:46:23
+- **Commit Message:** [style] ステータスバッジの改行崩れ防止、接続確立後の送信/受信パネルの動的活性・強調表示の実装
+- **Description:** None
+
+### `3583daa`
+- **Date:** 2026-07-07 12:41:13
+- **Commit Message:** [feat] i18nの動的インポート化、BudouXによる日本語改行最適化、送受信ガイドの追加
+- **Description:** None
+
+### `fb690a6`
+- **Date:** 2026-07-07 12:10:58
+- **Commit Message:** [perf] lucide-reactを廃止してローカルSVGアイコン(icons.tsx)に移行、ビルドロックと肥大化問題を解決
+- **Description:** None
+
+### `053a9b0`
+- **Date:** 2026-07-07 12:07:12
+- **Commit Message:** [fix] ビルドスクリプトの cd エイリアスを Set-Location に変更して警告を解消
+- **Description:** None
+
+### `ed0297c`
+- **Date:** 2026-07-07 12:04:02
+- **Commit Message:** [feat] 接続切れ検知時の遅延自動シャットダウン機能の実装（ゾンビプロセス防止）
+- **Description:** None
+
+### `613c480`
+- **Date:** 2026-07-07 11:39:04
+- **Commit Message:** [feat] プレミアムUI刷新、多言語対応、設定のバックエンド保存管理の実装
+- **Description:** None
+
+### `8e2cb8e`
+- **Date:** 2026-07-07 11:18:41
+- **Commit Message:** [fix] WebRTCの型ミスマッチ修正およびサーバー仕様書の整合性修正
+- **Description:** None
+
+### `1168b40`
+- **Date:** 2026-07-07 11:16:29
+- **Commit Message:** [feat] FSM（有限状態機械）によるWebRTC接続状態管理の刷新と詳細コンソールログの実装
+- **Description:** None
+
+### `443c828`
+- **Date:** 2026-07-07 11:09:11
+- **Commit Message:** [fix] 仮想NICの除外とタイムアウトフォールバックによるWebRTC接続フリーズの解消
+- **Description:** None
+
 ### `bfe6155`
 - **Date:** 2026-07-07 11:03:03
 - **Commit Message:** fix: ICE収集完了待機の差し戻しとゾンビプロセスの対応

@@ -33,7 +33,7 @@ P2Pで直接ファイルやフォルダを双方向に送受信できる、軽�
 
 **Windowsの場合 (PowerShell)**
 ```powershell
-git clone https://github.com/YuzukoUnderson/Sode-no-Shita.git
+git clone https://github.com/DovahkiinYuzuko/Sode-no-Shita.git
 cd Sode-no-Shita
 
 # フロントエンドのビルド
@@ -48,7 +48,7 @@ go build -o sode-no-shita.exe main.go
 
 **macOS / Linux の場合 (Bash / Zsh)**
 ```bash
-git clone https://github.com/YuzukoUnderson/Sode-no-Shita.git
+git clone https://github.com/DovahkiinYuzuko/Sode-no-Shita.git
 cd Sode-no-Shita
 
 # フロントエンドのビルド
@@ -98,7 +98,7 @@ Download the latest executable for your OS from the [Releases](https://github.co
 
 **For Windows (PowerShell)**
 ```powershell
-git clone https://github.com/YuzukoUnderson/Sode-no-Shita.git
+git clone https://github.com/DovahkiinYuzuko/Sode-no-Shita.git
 cd Sode-no-Shita
 
 # Build frontend
@@ -113,7 +113,7 @@ go build -o sode-no-shita.exe main.go
 
 **For macOS / Linux (Bash / Zsh)**
 ```bash
-git clone https://github.com/YuzukoUnderson/Sode-no-Shita.git
+git clone https://github.com/DovahkiinYuzuko/Sode-no-Shita.git
 cd Sode-no-Shita
 
 # Build frontend

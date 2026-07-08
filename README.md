@@ -24,7 +24,7 @@ P2Pで直接ファイルやフォルダを双方向に送受信できる、軽�
 ### インストール方法
 
 #### 一般ユーザー向け（推奨）
-[Releases](https://github.com/YuzukoUnderson/Sode-no-Shita/releases) ページから、お使いのOSに合った最新の実行ファイルをダウンロードしてください。
+[Releases](https://github.com/DovahkiinYuzuko/Sode-no-Shita/releases) ページから、お使いのOSに合った最新の実行ファイルをダウンロードしてください。
 
 #### 開発者向け（ソースからのビルド）
 
@@ -89,7 +89,7 @@ go build -o sode-no-shita main.go
 ### Installation
 
 #### General Users (Recommended)
-Download the latest executable for your OS from the [Releases](https://github.com/YuzukoUnderson/Sode-no-Shita/releases) page.
+Download the latest executable for your OS from the [Releases](https://github.com/DovahkiinYuzuko/Sode-no-Shita/releases) page.
 
 #### Developers (Build from source)
 

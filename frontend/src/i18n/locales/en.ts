@@ -43,11 +43,11 @@ const en: Translation = {
 	btnHelp: "How to Use",
 	helpTitle: "User Guide",
 	helpSteps: [
-		"[Establish P2P] First, one side clicks 'Generate Connection Code A' to prepare as Waiting side.",
-		"[Establish P2P] The other side pastes Code A and clicks 'Parse Code A & Generate Code B' to prepare as Connecting side.",
-		"[Establish P2P] Send Code B back to the Waiting side. The Waiting side pastes it and clicks 'Enter Code B & Connect'.",
-		"[P2P Connected] Once connected directly, the Sender selects files, and the Receiver selects a destination directory.",
-		"[Sharing Files] The Receiver will see the shared file list and can download them individually or batch download as a ZIP."
+		"[Establish P2P] First, the Sender clicks 'Generate Connection Code A' to enter waiting mode.",
+		"[Establish P2P] The Receiver pastes Code A and clicks 'Parse Code A & Generate Code B'.",
+		"[Establish P2P] Send Code B back to the Sender. The Sender pastes it and clicks 'Enter Code B & Connect'.",
+		"[Sharing Files] Once connected, the Sender selects files, and the Receiver selects a destination directory.",
+		"[Download] The Receiver will see the shared file list and can download them individually or batch download as a ZIP."
 	],
 	
 	errSelectFiles: "Failed to select files.",

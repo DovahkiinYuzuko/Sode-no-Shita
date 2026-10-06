@@ -181,7 +181,8 @@ export default function App() {
 
 	// 接続コードAを解析し、接続コードB (Answer) を生成
 	const acceptOffer = async () => {
-		if (!inputCode) {
+		const trimmedCode = inputCode.trim();
+		if (!trimmedCode) {
 			setAlertMsg(t.enterCodeWarning);
 			return;
 		}
@@ -189,7 +190,7 @@ export default function App() {
 			const res = await fetch('/api/webrtc/answer', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ code: inputCode }),
+				body: JSON.stringify({ code: trimmedCode }),
 			});
 			const data = await res.json();
 			if (data.error) {
@@ -205,7 +206,8 @@ export default function App() {
 
 	// 接続コードBを入力し、接続を確立
 	const connectAnswer = async () => {
-		if (!inputCode) {
+		const trimmedCode = inputCode.trim();
+		if (!trimmedCode) {
 			setAlertMsg(t.enterCodeWarning);
 			return;
 		}
@@ -213,7 +215,7 @@ export default function App() {
 			const res = await fetch('/api/webrtc/connect', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ code: inputCode }),
+				body: JSON.stringify({ code: trimmedCode }),
 			});
 			const data = await res.json();
 			if (data.error) {

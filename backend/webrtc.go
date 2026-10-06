@@ -190,13 +190,12 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 }
 
 func ConnectAnswer(answerCode string) error {
-	if err := TransitionTo(StateConnecting); err != nil {
+	sdp, err := DecompressSDP(answerCode)
+	if err != nil {
 		return err
 	}
 
-	sdp, err := DecompressSDP(answerCode)
-	if err != nil {
-		_ = TransitionTo(StateFailed)
+	if err := TransitionTo(StateConnecting); err != nil {
 		return err
 	}
 

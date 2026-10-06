@@ -64,6 +64,11 @@ const ja: Translation = {
 	resetSuccessMsg: "接続をリセットしました。",
 	connectionFailedUI: "接続に失敗しました。タイムアウトまたは切断されました。",
 	downloadLabel: "ダウンロード",
+	btnSaveCodeFile: "ファイルとして保存 (.sode)",
+	btnLoadCodeFile: "ファイルから読み込む",
+	dropCodeFileHint: "または .sode / .txt ファイルをここにドラッグ＆ドロップ",
+	codeFileLoadedMsg: "ファイルから接続コードを読み込みました！",
+	errReadCodeFile: "ファイルの読み込みに失敗しました。",
 	
 	roleLabel: "あなたの役割",
 	roleSender: "送信側 (ファイルを共有する側)",

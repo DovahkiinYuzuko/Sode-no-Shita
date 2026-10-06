@@ -56,6 +56,11 @@ export interface Translation {
 	resetSuccessMsg: string;
 	connectionFailedUI: string;
 	downloadLabel: string;
+	btnSaveCodeFile: string;
+	btnLoadCodeFile: string;
+	dropCodeFileHint: string;
+	codeFileLoadedMsg: string;
+	errReadCodeFile: string;
 	
 	roleLabel: string;
 	roleSender: string;

@@ -164,6 +164,34 @@ export default function App() {
 		}
 	};
 
+	// 接続コードを.sodeファイルとしてダウンロード保存
+	const saveCodeToFile = (code: string, defaultFilename: string) => {
+		if (!code) return;
+		const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = defaultFilename;
+		a.click();
+		URL.revokeObjectURL(url);
+	};
+
+	// ファイルから接続コードを読み込み
+	const handleCodeFileInput = (file: File) => {
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			const text = e.target?.result;
+			if (typeof text === 'string') {
+				setInputCode(text.trim());
+				setAlertMsg(t.codeFileLoadedMsg);
+			}
+		};
+		reader.onerror = () => {
+			setAlertMsg(t.errReadCodeFile);
+		};
+		reader.readAsText(file);
+	};
+
 	// 接続コードA (Offer) の生成
 	const createOffer = async () => {
 		try {
@@ -391,7 +419,33 @@ export default function App() {
 										placeholder={toBudouString(t.placeholderCode, lang === 'ja')}
 										value={inputCode}
 										onChange={(e) => setInputCode(e.target.value)}
+										onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+										onDrop={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											const file = e.dataTransfer.files?.[0];
+											if (file) handleCodeFileInput(file);
+										}}
 									/>
+									<div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+										<label className={`${styles.button} ${styles.buttonSecondary}`} style={{ cursor: 'pointer', padding: '6px 12px', fontSize: '13px', display: 'inline-flex', alignItems: 'center' }} data-testid="btn-load-code-file-label">
+											<BudouText text={t.btnLoadCodeFile} enabled={lang === 'ja'} />
+											<input 
+												type="file" 
+												accept=".sode,.txt" 
+												style={{ display: 'none' }} 
+												data-testid="input-load-code-file"
+												onChange={(e) => {
+													const file = e.target.files?.[0];
+													if (file) handleCodeFileInput(file);
+													e.target.value = '';
+												}}
+											/>
+										</label>
+										<span style={{ fontSize: '12px', opacity: 0.8 }}>
+											<BudouText text={t.dropCodeFileHint} enabled={lang === 'ja'} />
+										</span>
+									</div>
 								</div>
 
 								<div className={styles.formGroup}>
@@ -441,6 +495,16 @@ export default function App() {
 												{copiedA ? <Check size={16} /> : <Copy size={16} />}
 											</button>
 										</div>
+										<div style={{ marginTop: '8px' }}>
+											<button 
+												className={`${styles.button} ${styles.buttonSecondary}`} 
+												style={{ padding: '6px 12px', fontSize: '13px' }} 
+												data-testid="btn-save-offer-file" 
+												onClick={() => saveCodeToFile(generatedCode, 'sode_offer.sode')}
+											>
+												<BudouText text={t.btnSaveCodeFile} enabled={lang === 'ja'} />
+											</button>
+										</div>
 									</div>
 								)}
 
@@ -454,7 +518,32 @@ export default function App() {
 										placeholder={toBudouString(t.placeholderCode, lang === 'ja')}
 										value={inputCode}
 										onChange={(e) => setInputCode(e.target.value)}
+										onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+										onDrop={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											const file = e.dataTransfer.files?.[0];
+											if (file) handleCodeFileInput(file);
+										}}
 									/>
+									<div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+										<label className={`${styles.button} ${styles.buttonSecondary}`} style={{ cursor: 'pointer', padding: '6px 12px', fontSize: '13px', display: 'inline-flex', alignItems: 'center' }}>
+											<BudouText text={t.btnLoadCodeFile} enabled={lang === 'ja'} />
+											<input 
+												type="file" 
+												accept=".sode,.txt" 
+												style={{ display: 'none' }} 
+												onChange={(e) => {
+													const file = e.target.files?.[0];
+													if (file) handleCodeFileInput(file);
+													e.target.value = '';
+												}}
+											/>
+										</label>
+										<span style={{ fontSize: '12px', opacity: 0.8 }}>
+											<BudouText text={t.dropCodeFileHint} enabled={lang === 'ja'} />
+										</span>
+									</div>
 								</div>
 
 								<div className={styles.formGroup}>
@@ -489,6 +578,16 @@ export default function App() {
 											/>
 											<button className={styles.copyBtn} onClick={() => handleCopy(answerCode, false)} title={t.btnCopy}>
 												{copiedB ? <Check size={16} /> : <Copy size={16} />}
+											</button>
+										</div>
+										<div style={{ marginTop: '8px' }}>
+											<button 
+												className={`${styles.button} ${styles.buttonSecondary}`} 
+												style={{ padding: '6px 12px', fontSize: '13px' }} 
+												data-testid="btn-save-answer-file" 
+												onClick={() => saveCodeToFile(answerCode, 'sode_answer.sode')}
+											>
+												<BudouText text={t.btnSaveCodeFile} enabled={lang === 'ja'} />
 											</button>
 										</div>
 									</div>

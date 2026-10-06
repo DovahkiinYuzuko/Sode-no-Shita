@@ -64,6 +64,11 @@ const en: Translation = {
 	resetSuccessMsg: "Connection reset successfully.",
 	connectionFailedUI: "Connection failed. Timed out or disconnected.",
 	downloadLabel: "Download",
+	btnSaveCodeFile: "Save to File (.sode)",
+	btnLoadCodeFile: "Load from File",
+	dropCodeFileHint: "or drag & drop a .sode / .txt file here",
+	codeFileLoadedMsg: "Connection code loaded from file!",
+	errReadCodeFile: "Failed to read file.",
 	
 	roleLabel: "Your Role",
 	roleSender: "Sender (Share Files)",

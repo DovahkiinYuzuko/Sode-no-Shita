@@ -50,14 +50,14 @@ graph TD
   * 収集完了またはタイムアウト後、`TransitionTo(StateWaitingForAnswer)` を実行して状態を `WAITING_FOR_ANSWER` に移行し、コードを圧縮して返す。
   * `isOffer` が `false` の場合（接続側）、`TransitionTo(StateGeneratingAnswer)` を実行して状態を `GENERATING_ANSWER` に移行する。
 
-### (Function) `ConnectAnswer` (L192-209)
+### (Function) `ConnectAnswer` (L192-208)
 * **Description:** オファー側のピア接続に、接続コードB（アンサーSDP）をデコードして適用し、接続を開始する。
 * **Arguments:**
   * `answerCode` (string): 接続コードB
 * **Details:**
   * 実行開始時に `TransitionTo(StateConnecting)` を実行して `CONNECTING` 状態に移行する。
 
-### (Function) `AcceptOfferAndCreateAnswer` (L211-251)
+### (Function) `AcceptOfferAndCreateAnswer` (L210-250)
 * **Description:** 接続側（受信側）のピア接続に、接続コードA（オファーSDP）をデコードして適用し、接続コードB（アンサーSDP）を生成・圧縮して返す。
 * **Arguments:**
   * `offerCode` (string): 接続コードA
@@ -68,12 +68,12 @@ graph TD
   * アンサーを生成し、`webrtc.GatheringCompletePromise` でICE収集完了を最大3秒間待つ。
   * 収集完了またはタイムアウト後、`TransitionTo(StateConnecting)` を実行して状態を `CONNECTING` に移行し、接続コードBを返す。
 
-### (Function) `handleFileSendRequest` (L466-535)
+### (Function) `handleFileSendRequest` (L465-534)
 * **Description:** 指定された単一ファイルをData Channel経由でチャンク分割して送信する。
 * **Arguments:**
   * `fileName` (string): 送信ファイル名
 
-### (Function) `handleZipSendRequest` (L537-632)
+### (Function) `handleZipSendRequest` (L536-631)
 * **Description:** 選択された複数ファイルをメモリ上で動的（オンザフライ）にZIP化しながら、Data ChannelへZIPストリームとして送信する。
 * **Details:**
   * 各ファイルの `FileInfo` (`Stat()`) を正しく取得し、`zip.FileInfoHeader` に渡すことで安全にZIPアーカイブのヘッダーを構築して送信する。

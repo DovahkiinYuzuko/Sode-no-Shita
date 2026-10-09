@@ -75,7 +75,6 @@ jobs:
           Copy-Item "README.md" -Destination "$pkgName/"
           Copy-Item "LICENSE.MIT" -Destination "$pkgName/"
           Compress-Archive -Path "$pkgName" -DestinationPath "${pkgName}.zip"
-          echo "ARCHIVE_PATH=${pkgName}.zip" >> $env:GITHUB_ENV
 
       - name: Package Release Asset (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -86,7 +85,6 @@ jobs:
           cp README.md LICENSE.MIT "$PKG_NAME/"
           chmod +x "$PKG_NAME/${{ matrix.binary }}"
           tar -czvf "${PKG_NAME}.tar.gz" "$PKG_NAME"
-          echo "ARCHIVE_PATH=${PKG_NAME}.tar.gz" >> $GITHUB_ENV
 
       - name: Package Release Asset (macOS)
         if: matrix.os == 'macos-latest'
@@ -97,9 +95,8 @@ jobs:
           cp README.md LICENSE.MIT "$PKG_NAME/"
           chmod +x "$PKG_NAME/${{ matrix.binary }}"
           zip -r "${PKG_NAME}.zip" "$PKG_NAME"
-          echo "ARCHIVE_PATH=${PKG_NAME}.zip" >> $GITHUB_ENV
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.ARCHIVE_PATH }}
+          files: sode-no-shita-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.archive_ext }}

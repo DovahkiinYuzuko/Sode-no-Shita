@@ -3,7 +3,20 @@
 Describe the purpose of this branch here.
 --- START GIT LOG ---
 
-### `6663dc4`
+### `72c78dd`
+- **Date:** 2026-10-10 02:58:02
+- **Commit Message:** [docs] git log同期: main
+- **Description:** sync-git-log.jsによるmainブランチコミット履歴の同期。
+
+### `74cc989`
+- **Date:** 2026-10-10 02:57:54
+- **Commit Message:** [docs] README.mdの全面刷新およびGitHub Releasesパッケージングの改善
+- **Description:** リリースワークフローにて単一バイナリ直置きからREADME・LICENSEを同梱したzip/tar.gzアーカイブ配布形式へ移行し、darwin表記をmacos（Intel/arm64）へ親しみやすく整理。またREADME.mdにおいて、UIの実際のボタン表記に即した送受信フロー解説への改善、.sodeファイル共有やTURN中継対応などの新機能の追記、各OS向けアーカイブ展開手順の案内を全面的に更新。
+- **Constraint:** 既存のクロスコンパイル環境（matrix）を維持し、Linux/macOSでの実行パーミッションを保持したアーカイブ形式とすること。
+- **Rejected:** 単体バイナリのみの配布を継続する案（同梱ドキュメントや実行権限の観点から却下）。
+- **Chosen:** Windows/macOSはzip、Linuxはtar.gzとしてREADMEとLICENSEを同梱してパッケージングし、README.mdの解説もそれに合わせて同期。
+
+### `01277d7`
 - **Date:** 2026-10-10 02:52:36
 - **Commit Message:** [docs] git log同期: main
 - **Description:** sync-git-log.jsによるmainブランチコミット履歴の同期。

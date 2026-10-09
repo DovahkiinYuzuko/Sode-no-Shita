@@ -3,6 +3,24 @@
 Describe the purpose of this branch here.
 --- START GIT LOG ---
 
+### `6663dc4`
+- **Date:** 2026-10-10 02:52:36
+- **Commit Message:** [docs] git log同期: main
+- **Description:** sync-git-log.jsによるmainブランチコミット履歴の同期。
+
+### `cb8a7f2`
+- **Date:** 2026-10-10 02:52:18
+- **Commit Message:** [feat] WebRTC NAT越えの強化および中継TURNサーバー設定機能の実装
+- **Description:** Symmetric NAT環境や厳格なファイアウォール下におけるP2P接続失敗を解決するため、中継TURNサーバー設定機能（URL/認証情報）を追加。設定ファイルおよび設定UIから入力可能にし、バックエンドで動的にWebRTC Configurationに反映。さらにWAN越えのDNS名前解決や応答遅延に備えてICE Gathering待機タイムアウトを3秒から10秒に緩和。
+- **Constraint:** フロントエンドに複雑な接続ロジックを持たせず、通信制御とICEサーバー構築はすべてGoバックエンドに集約すること。多言語UIテキストは外部定義ファイルで管理すること。
+- **Rejected:** フロントエンド側で直接WebRTCのPeerConnectionを制御する案（バックエンド主導のアーキテクチャ方針と反するため却下）。ICE Gathering待機時間を無制限にする案（通信遮断時のハング防止のため10秒タイムアウトを採用）。
+- **Chosen:** バックエンドのAppConfigにTURN設定を追加し、/api/config/update経由で保存・永続化。SettingsModalでURL/ユーザー名/パスワードを入力・通知する最小限のUIを構築。
+
+### `9d79c62`
+- **Date:** 2026-10-07 02:20:44
+- **Commit Message:** [docs] git log同期: main (issue-2 マージ後)
+- **Description:** sync-git-log.jsによるmainブランチコミット履歴の同期。
+
 ### `734eb1e`
 - **Date:** 2026-10-07 02:20:01
 - **Commit Message:** Merge branch 'issue-2-file-based-signaling-exchange' into main

@@ -38,6 +38,14 @@ export interface Translation {
 	settingsTitle: string;
 	selectLang: string;
 	selectTheme: string;
+	turnSettingsTitle: string;
+	turnServerUrlLabel: string;
+	turnServerUrlPlaceholder: string;
+	turnUsernameLabel: string;
+	turnUsernamePlaceholder: string;
+	turnCredentialLabel: string;
+	turnCredentialPlaceholder: string;
+	turnSettingsHint: string;
 	btnHelp: string;
 	helpTitle: string;
 	helpSteps: string[];

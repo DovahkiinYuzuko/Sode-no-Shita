@@ -8,8 +8,11 @@ import (
 )
 
 type AppConfig struct {
-	Theme string `json:"theme"` // "dark" | "light"
-	Lang  string `json:"lang"`  // "ja" | "en"
+	Theme          string `json:"theme"`                    // "dark" | "light"
+	Lang           string `json:"lang"`                     // "ja" | "en"
+	TurnServerURL  string `json:"turnServerUrl,omitempty"`  // "turn:host:port"
+	TurnUsername   string `json:"turnUsername,omitempty"`   // username
+	TurnCredential string `json:"turnCredential,omitempty"` // password/credential
 }
 
 const configFileName = "sode-no-shita-config.json"

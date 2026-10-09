@@ -96,12 +96,32 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 		}
 	}
 
-	config := webrtc.Configuration{
-		ICEServers: []webrtc.ICEServer{
-			{
-				URLs: []string{"stun:stun.l.google.com:19302"},
-			},
+	GlobalState.Lock()
+	cfg := GlobalState.Config
+	GlobalState.Unlock()
+
+	iceServers := []webrtc.ICEServer{
+		{
+			URLs: []string{"stun:stun.l.google.com:19302"},
 		},
+	}
+	if cfg.TurnServerURL != "" {
+		turnServer := webrtc.ICEServer{
+			URLs: []string{cfg.TurnServerURL},
+		}
+		if cfg.TurnUsername != "" {
+			turnServer.Username = cfg.TurnUsername
+		}
+		if cfg.TurnCredential != "" {
+			turnServer.Credential = cfg.TurnCredential
+			turnServer.CredentialType = webrtc.ICECredentialTypePassword
+		}
+		iceServers = append(iceServers, turnServer)
+		log.Printf("[WebRTC] Added TURN server: %s\n", cfg.TurnServerURL)
+	}
+
+	config := webrtc.Configuration{
+		ICEServers: iceServers,
 	}
 
 	var err error
@@ -160,12 +180,12 @@ func InitWebRTCPeer(isOffer bool) (string, error) {
 			return "", err
 		}
 
-		// Gather Completeを待つ（3秒タイムアウト）
+		// Gather Completeを待つ（10秒タイムアウト）
 		gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 		select {
 		case <-gatherComplete:
 			log.Println("[WebRTC] ICE candidate gathering complete")
-		case <-time.After(3 * time.Second):
+		case <-time.After(10 * time.Second):
 			log.Println("[WebRTC] ICE candidate gathering timed out, proceeding with gathered candidates")
 		}
 
@@ -233,12 +253,12 @@ func AcceptOfferAndCreateAnswer(offerCode string) (string, error) {
 		return "", err
 	}
 
-	// Gather Completeを待つ（3秒タイムアウト）
+	// Gather Completeを待つ（10秒タイムアウト）
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 	select {
 	case <-gatherComplete:
 		log.Println("[WebRTC] ICE candidate gathering complete (answer)")
-	case <-time.After(3 * time.Second):
+	case <-time.After(10 * time.Second):
 		log.Println("[WebRTC] ICE candidate gathering timed out (answer), proceeding with gathered candidates")
 	}
 

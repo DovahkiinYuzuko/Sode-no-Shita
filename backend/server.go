@@ -238,8 +238,11 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 			return
 		}
 		var req struct {
-			Theme string `json:"theme"`
-			Lang  string `json:"lang"`
+			Theme          string  `json:"theme"`
+			Lang           string  `json:"lang"`
+			TurnServerURL  *string `json:"turnServerUrl"`
+			TurnUsername   *string `json:"turnUsername"`
+			TurnCredential *string `json:"turnCredential"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
@@ -254,6 +257,15 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 		if req.Lang != "" {
 			GlobalState.Config.Lang = req.Lang
 		}
+		if req.TurnServerURL != nil {
+			GlobalState.Config.TurnServerURL = *req.TurnServerURL
+		}
+		if req.TurnUsername != nil {
+			GlobalState.Config.TurnUsername = *req.TurnUsername
+		}
+		if req.TurnCredential != nil {
+			GlobalState.Config.TurnCredential = *req.TurnCredential
+		}
 		cfg := GlobalState.Config
 		GlobalState.Unlock()
 
@@ -264,7 +276,7 @@ func StartWebServer(port int, frontendFS fs.FS) error {
 			return
 		}
 
-		log.Printf("[API] Config updated: theme=%s, lang=%s\n", cfg.Theme, cfg.Lang)
+		log.Printf("[API] Config updated: theme=%s, lang=%s, turnServerUrl=%s\n", cfg.Theme, cfg.Lang, cfg.TurnServerURL)
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
 	})

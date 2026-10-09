@@ -23,6 +23,9 @@ interface FileInfo {
 export default function App() {
 	const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 	const [lang, setLang] = useState<string>(defaultLang);
+	const [turnServerUrl, setTurnServerUrl] = useState<string>('');
+	const [turnUsername, setTurnUsername] = useState<string>('');
+	const [turnCredential, setTurnCredential] = useState<string>('');
 	const [connState, setConnState] = useState<string>('disconnected');
 	const [fsmState, setFsmState] = useState<string>('IDLE');
 	const [role, setRole] = useState<string>('sender');
@@ -98,6 +101,9 @@ export default function App() {
 				if (state.config) {
 					if (state.config.theme) setTheme(state.config.theme);
 					if (state.config.lang) setLang(state.config.lang);
+					if (state.config.turnServerUrl !== undefined) setTurnServerUrl(state.config.turnServerUrl);
+					if (state.config.turnUsername !== undefined) setTurnUsername(state.config.turnUsername);
+					if (state.config.turnCredential !== undefined) setTurnCredential(state.config.turnCredential);
 				}
 			} catch (e) {
 				console.error(t.logSseParseError, e);
@@ -114,11 +120,20 @@ export default function App() {
 	}, []);
 
 	// API呼び出し：設定更新
-	const updateConfig = async (nextTheme?: string, nextLang?: string) => {
+	const updateConfig = async (
+		nextTheme?: string,
+		nextLang?: string,
+		nextTurnUrl?: string,
+		nextTurnUser?: string,
+		nextTurnCred?: string
+	) => {
 		try {
 			const body: any = {};
-			if (nextTheme) body.theme = nextTheme;
-			if (nextLang) body.lang = nextLang;
+			if (nextTheme !== undefined) body.theme = nextTheme;
+			if (nextLang !== undefined) body.lang = nextLang;
+			if (nextTurnUrl !== undefined) body.turnServerUrl = nextTurnUrl;
+			if (nextTurnUser !== undefined) body.turnUsername = nextTurnUser;
+			if (nextTurnCred !== undefined) body.turnCredential = nextTurnCred;
 
 			const res = await fetch('/api/config/update', {
 				method: 'POST',
@@ -742,6 +757,9 @@ export default function App() {
 					locales={locales}
 					theme={theme}
 					t={t}
+					turnServerUrl={turnServerUrl}
+					turnUsername={turnUsername}
+					turnCredential={turnCredential}
 					onClose={() => setShowSettings(false)}
 					onLangChange={(nextLang) => {
 						setLang(nextLang);
@@ -750,6 +768,12 @@ export default function App() {
 					onThemeChange={(nextTheme) => {
 						setTheme(nextTheme);
 						updateConfig(nextTheme, undefined);
+					}}
+					onTurnConfigChange={(nextUrl, nextUser, nextCred) => {
+						setTurnServerUrl(nextUrl);
+						setTurnUsername(nextUser);
+						setTurnCredential(nextCred);
+						updateConfig(undefined, undefined, nextUrl, nextUser, nextCred);
 					}}
 				/>
 			)}

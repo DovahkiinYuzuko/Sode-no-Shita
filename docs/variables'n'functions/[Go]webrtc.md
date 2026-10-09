@@ -38,7 +38,7 @@ graph TD
 * **Details:**
   * `SettingEngine.SetInterfaceFilter` を使用し、接続性のない仮想ネットワークインターフェース（`vethernet`, `docker`, `virtual`, `wsl`, `vmware` を含む名称のもの）をICE収集対象から除外する。
 
-### (Function) `InitWebRTCPeer` (L88-190)
+### (Function) `InitWebRTCPeer` (L88-210)
 * **Description:** WebRTCピア接続（pion/webrtc）を初期化し、接続コードを生成する。あるいは対向の接続コードを解析して接続する。
 * **Arguments:**
   * `isOffer` (bool): 接続を待つ側（オファー側）かどうか
@@ -46,18 +46,19 @@ graph TD
   * `string`: 接続コード（圧縮SDP）
   * `error`: 初期化エラー
 * **Details:**
-  * `isOffer` が `true` の場合（待機側）、`TransitionTo(StateGeneratingOffer)` を実行して状態を `GENERATING_OFFER` に移行し、オファーSDPを作成しICEの収集（最大3秒タイムアウト）を待つ。
+  * `GlobalState.Config` に `TurnServerURL` が設定されている場合、STUNに加えてTURN中継サーバーを `webrtc.Configuration.ICEServers` に動的に組み込む。
+  * `isOffer` が `true` の場合（待機側）、`TransitionTo(StateGeneratingOffer)` を実行して状態を `GENERATING_OFFER` に移行し、オファーSDPを作成しICEの収集（最大10秒タイムアウト）を待つ。
   * 収集完了またはタイムアウト後、`TransitionTo(StateWaitingForAnswer)` を実行して状態を `WAITING_FOR_ANSWER` に移行し、コードを圧縮して返す。
   * `isOffer` が `false` の場合（接続側）、`TransitionTo(StateGeneratingAnswer)` を実行して状態を `GENERATING_ANSWER` に移行する。
 
-### (Function) `ConnectAnswer` (L192-208)
+### (Function) `ConnectAnswer` (L212-228)
 * **Description:** オファー側のピア接続に、接続コードB（アンサーSDP）をデコードして適用し、接続を開始する。
 * **Arguments:**
   * `answerCode` (string): 接続コードB
 * **Details:**
   * 実行開始時に `TransitionTo(StateConnecting)` を実行して `CONNECTING` 状態に移行する。
 
-### (Function) `AcceptOfferAndCreateAnswer` (L210-250)
+### (Function) `AcceptOfferAndCreateAnswer` (L230-270)
 * **Description:** 接続側（受信側）のピア接続に、接続コードA（オファーSDP）をデコードして適用し、接続コードB（アンサーSDP）を生成・圧縮して返す。
 * **Arguments:**
   * `offerCode` (string): 接続コードA
@@ -65,15 +66,15 @@ graph TD
   * `string`: 接続コードB（圧縮SDP）
   * `error`: エラー
 * **Details:**
-  * アンサーを生成し、`webrtc.GatheringCompletePromise` でICE収集完了を最大3秒間待つ。
+  * アンサーを生成し、`webrtc.GatheringCompletePromise` でICE収集完了を最大10秒間待つ。
   * 収集完了またはタイムアウト後、`TransitionTo(StateConnecting)` を実行して状態を `CONNECTING` に移行し、接続コードBを返す。
 
-### (Function) `handleFileSendRequest` (L465-534)
+### (Function) `handleFileSendRequest` (L485-554)
 * **Description:** 指定された単一ファイルをData Channel経由でチャンク分割して送信する。
 * **Arguments:**
   * `fileName` (string): 送信ファイル名
 
-### (Function) `handleZipSendRequest` (L536-631)
+### (Function) `handleZipSendRequest` (L556-651)
 * **Description:** 選択された複数ファイルをメモリ上で動的（オンザフライ）にZIP化しながら、Data ChannelへZIPストリームとして送信する。
 * **Details:**
   * 各ファイルの `FileInfo` (`Stat()`) を正しく取得し、`zip.FileInfoHeader` に渡すことで安全にZIPアーカイブのヘッダーを構築して送信する。

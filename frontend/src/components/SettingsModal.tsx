@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { Translation } from '../i18n/types';
 import { Settings, X, Sun, Moon } from '../icons';
 import { BudouText } from './BudouText';
@@ -8,9 +9,13 @@ interface SettingsModalProps {
 	locales: Record<string, Translation>;
 	theme: 'light' | 'dark';
 	t: Translation;
+	turnServerUrl: string;
+	turnUsername: string;
+	turnCredential: string;
 	onClose: () => void;
 	onLangChange: (lang: string) => void;
 	onThemeChange: (theme: 'light' | 'dark') => void;
+	onTurnConfigChange: (turnServerUrl: string, turnUsername: string, turnCredential: string) => void;
 }
 
 export function SettingsModal({
@@ -18,10 +23,36 @@ export function SettingsModal({
 	locales,
 	theme,
 	t,
+	turnServerUrl,
+	turnUsername,
+	turnCredential,
 	onClose,
 	onLangChange,
 	onThemeChange,
+	onTurnConfigChange,
 }: SettingsModalProps) {
+	const [url, setUrl] = useState(turnServerUrl);
+	const [user, setUser] = useState(turnUsername);
+	const [cred, setCred] = useState(turnCredential);
+
+	useEffect(() => {
+		setUrl(turnServerUrl);
+	}, [turnServerUrl]);
+
+	useEffect(() => {
+		setUser(turnUsername);
+	}, [turnUsername]);
+
+	useEffect(() => {
+		setCred(turnCredential);
+	}, [turnCredential]);
+
+	const handleBlur = () => {
+		if (url !== turnServerUrl || user !== turnUsername || cred !== turnCredential) {
+			onTurnConfigChange(url, user, cred);
+		}
+	};
+
 	return (
 		<div className={styles.modalOverlay} onClick={onClose}>
 			<div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -72,6 +103,59 @@ export function SettingsModal({
 							>
 								<Moon size={16} />
 							</button>
+						</div>
+					</div>
+
+					<div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+						<h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600 }}>
+							<BudouText text={t.turnSettingsTitle} enabled={lang === 'ja'} />
+						</h4>
+						<p style={{ margin: '0 0 12px 0', fontSize: '12px', color: 'var(--muted)' }}>
+							<BudouText text={t.turnSettingsHint} enabled={lang === 'ja'} />
+						</p>
+
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+							<div>
+								<label className={styles.label} style={{ marginBottom: '4px', fontSize: '12px' }}>
+									{t.turnServerUrlLabel}
+								</label>
+								<input
+									type="text"
+									className={styles.input}
+									value={url}
+									placeholder={t.turnServerUrlPlaceholder}
+									onChange={(e) => setUrl(e.target.value)}
+									onBlur={handleBlur}
+								/>
+							</div>
+
+							<div>
+								<label className={styles.label} style={{ marginBottom: '4px', fontSize: '12px' }}>
+									{t.turnUsernameLabel}
+								</label>
+								<input
+									type="text"
+									className={styles.input}
+									value={user}
+									placeholder={t.turnUsernamePlaceholder}
+									onChange={(e) => setUser(e.target.value)}
+									onBlur={handleBlur}
+								/>
+							</div>
+
+							<div>
+								<label className={styles.label} style={{ marginBottom: '4px', fontSize: '12px' }}>
+									{t.turnCredentialLabel}
+								</label>
+								<input
+									type="password"
+									className={styles.input}
+									value={cred}
+									placeholder={t.turnCredentialPlaceholder}
+									onChange={(e) => setCred(e.target.value)}
+									onBlur={handleBlur}
+								/>
+							</div>
 						</div>
 					</div>
 				</div>

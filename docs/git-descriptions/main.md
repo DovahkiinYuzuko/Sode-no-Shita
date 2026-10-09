@@ -3,7 +3,20 @@
 Describe the purpose of this branch here.
 --- START GIT LOG ---
 
-### `72c78dd`
+### `9259349`
+- **Date:** 2026-10-10 02:59:35
+- **Commit Message:** [docs] git log同期: main
+- **Description:** sync-git-log.jsによるmainブランチコミット履歴の同期。
+
+### `12988f5`
+- **Date:** 2026-10-10 02:59:26
+- **Commit Message:** [fix] リリースワークフローのアセットパス指定をマトリクス直接参照に修正
+- **Description:** IDE Linterで警告（Context access might be invalid: ARCHIVE_PATH）が出ていた動的環境変数参照を廃止し、マトリクス変数（matrix.target, matrix.archive_ext）を直接展開した決定的なファイルパス指定に変更。
+- **Constraint:** 警告の解消と同時に、無駄な環境変数書き出しステップを排除してワークフローを簡潔に保つこと。
+- **Rejected:** ジョブレベルで空のARCHIVE_PATHを静的定義する案（マトリクス展開の方が直接的で安全なため却下）。
+- **Chosen:** matrix.target と matrix.archive_ext による直接パス指定を採用。
+
+### `c30faaf`
 - **Date:** 2026-10-10 02:58:02
 - **Commit Message:** [docs] git log同期: main
 - **Description:** sync-git-log.jsによるmainブランチコミット履歴の同期。

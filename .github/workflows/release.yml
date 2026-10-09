@@ -18,26 +18,34 @@ jobs:
           - os: windows-latest
             goos: windows
             goarch: amd64
-            ext: .exe
+            target: windows-amd64
+            binary: sode-no-shita.exe
+            archive_ext: zip
           - os: ubuntu-latest
             goos: linux
             goarch: amd64
-            ext: ""
+            target: linux-amd64
+            binary: sode-no-shita
+            archive_ext: tar.gz
           - os: macos-latest
             goos: darwin
             goarch: amd64
-            ext: ""
+            target: macos-intel
+            binary: sode-no-shita
+            archive_ext: zip
           - os: macos-latest
             goos: darwin
             goarch: arm64
-            ext: ""
+            target: macos-arm64
+            binary: sode-no-shita
+            archive_ext: zip
     steps:
       - uses: actions/checkout@v4
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -55,9 +63,43 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          go build -ldflags="-s -w" -o sode-no-shita-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} main.go
+          go build -ldflags="-s -w" -o dist-bin/${{ matrix.binary }} main.go
+
+      - name: Package Release Asset (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $pkgName = "sode-no-shita-${{ github.ref_name }}-${{ matrix.target }}"
+          New-Item -ItemType Directory -Path $pkgName
+          Copy-Item "dist-bin/${{ matrix.binary }}" -Destination "$pkgName/"
+          Copy-Item "README.md" -Destination "$pkgName/"
+          Copy-Item "LICENSE.MIT" -Destination "$pkgName/"
+          Compress-Archive -Path "$pkgName" -DestinationPath "${pkgName}.zip"
+          echo "ARCHIVE_PATH=${pkgName}.zip" >> $env:GITHUB_ENV
+
+      - name: Package Release Asset (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          PKG_NAME="sode-no-shita-${{ github.ref_name }}-${{ matrix.target }}"
+          mkdir -p "$PKG_NAME"
+          cp "dist-bin/${{ matrix.binary }}" "$PKG_NAME/"
+          cp README.md LICENSE.MIT "$PKG_NAME/"
+          chmod +x "$PKG_NAME/${{ matrix.binary }}"
+          tar -czvf "${PKG_NAME}.tar.gz" "$PKG_NAME"
+          echo "ARCHIVE_PATH=${PKG_NAME}.tar.gz" >> $GITHUB_ENV
+
+      - name: Package Release Asset (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          PKG_NAME="sode-no-shita-${{ github.ref_name }}-${{ matrix.target }}"
+          mkdir -p "$PKG_NAME"
+          cp "dist-bin/${{ matrix.binary }}" "$PKG_NAME/"
+          cp README.md LICENSE.MIT "$PKG_NAME/"
+          chmod +x "$PKG_NAME/${{ matrix.binary }}"
+          zip -r "${PKG_NAME}.zip" "$PKG_NAME"
+          echo "ARCHIVE_PATH=${PKG_NAME}.zip" >> $GITHUB_ENV
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: sode-no-shita-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+          files: ${{ env.ARCHIVE_PATH }}
